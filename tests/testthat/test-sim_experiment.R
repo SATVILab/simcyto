@@ -94,3 +94,94 @@ test_that("simCytExperiment supports perturbations and ratio correction", {
   expect_s4_class(ff_unstim, "flowFrame")
   expect_equal(nrow(flowCore::exprs(ff_unstim)), nCell)
 })
+
+test_that("fixed-seed regression test guarantees exact cell allocation parity and reproducibility", {
+  sc <- simCytScenarioUnivariate(probUns = c(0.8, 0.2), probResponse = c(-0.2, 0.2))
+
+  set.seed(777)
+  res1 <- simCytExperiment(
+    nSample = 1,
+    nMarker = sc$nMarker,
+    nCondition = 2,
+    nCluster = sc$nCluster,
+    nCellByCondition = 100,
+    transformationFunc = simCytTransformIdentity(),
+    meanExprMat = sc$meanExprMat,
+    clusterLabelVec = sc$clusterLabelVec,
+    probVecUns = sc$probVecUns,
+    probExact = TRUE,
+    probResponseVecByStimCondition = sc$probResponseVecByStimCondition
+  )
+
+  lbls_unstim <- res1$labelsList[["sample001_unstim"]]
+  lbls_stim1 <- res1$labelsList[["sample001_stim1"]]
+
+  expect_equal(sum(lbls_unstim == "F1-"), 80)
+  expect_equal(sum(lbls_unstim == "F1+"), 20)
+  expect_equal(sum(lbls_stim1 == "F1-"), 60)
+  expect_equal(sum(lbls_stim1 == "F1+"), 40)
+
+  set.seed(777)
+  res2 <- simCytExperiment(
+    nSample = 1,
+    nMarker = sc$nMarker,
+    nCondition = 2,
+    nCluster = sc$nCluster,
+    nCellByCondition = 100,
+    transformationFunc = simCytTransformIdentity(),
+    meanExprMat = sc$meanExprMat,
+    clusterLabelVec = sc$clusterLabelVec,
+    probVecUns = sc$probVecUns,
+    probExact = TRUE,
+    probResponseVecByStimCondition = sc$probResponseVecByStimCondition
+  )
+
+  expect_equal(flowCore::exprs(res1$flowFrameList[["sample001_unstim"]]),
+               flowCore::exprs(res2$flowFrameList[["sample001_unstim"]]))
+  expect_equal(res1$labelsList[["sample001_unstim"]],
+               res2$labelsList[["sample001_unstim"]])
+})
+
+test_that("fixed-seed regression test validates mixture types and ratio corrections reproducibility", {
+  sc <- simCytScenarioBivariate()
+  gamma_trans <- simCytTransformGamma(shape = 2, scale = 1)
+
+  set.seed(999)
+  res_gamma1 <- simCytExperiment(
+    nSample = 1,
+    nMarker = sc$nMarker,
+    nCondition = 2,
+    nCluster = sc$nCluster,
+    nCellByCondition = 80,
+    transformationFunc = gamma_trans,
+    mixtureType = "tOnly",
+    meanExprMat = sc$meanExprMat,
+    clusterLabelVec = sc$clusterLabelVec,
+    probVecUns = sc$probVecUns,
+    probResponseVecByStimCondition = sc$probResponseVecByStimCondition,
+    samplePerturbationSd = 0.05,
+    conditionPerturbationSd = 0.05,
+    clusterPerturbationSd = 0.05
+  )
+
+  set.seed(999)
+  res_gamma2 <- simCytExperiment(
+    nSample = 1,
+    nMarker = sc$nMarker,
+    nCondition = 2,
+    nCluster = sc$nCluster,
+    nCellByCondition = 80,
+    transformationFunc = gamma_trans,
+    mixtureType = "tOnly",
+    meanExprMat = sc$meanExprMat,
+    clusterLabelVec = sc$clusterLabelVec,
+    probVecUns = sc$probVecUns,
+    probResponseVecByStimCondition = sc$probResponseVecByStimCondition,
+    samplePerturbationSd = 0.05,
+    conditionPerturbationSd = 0.05,
+    clusterPerturbationSd = 0.05
+  )
+
+  expect_equal(flowCore::exprs(res_gamma1$flowFrameList[["sample001_stim1"]]),
+               flowCore::exprs(res_gamma2$flowFrameList[["sample001_stim1"]]))
+})
