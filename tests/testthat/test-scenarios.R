@@ -44,3 +44,17 @@ test_that("scenarios can be passed directly into simCytExperiment", {
   expect_length(res$flowFrameList, 2)
   expect_true(all(res$labelsList[["sample001_unstim"]] %in% sc$clusterLabelVec))
 })
+
+test_that("fixed-seed regression test for scenario builders ensures deterministic outputs", {
+  set.seed(100)
+  sc1 <- simCytScenarioUnivariate(lowMean = 1, highMean = 8, probUns = c(0.9, 0.1), probResponse = c(-0.05, 0.05))
+  expect_equal(sc1$meanExprMat, matrix(c(1, 8), ncol = 1))
+  expect_equal(sc1$probVecUns, c(0.9, 0.1))
+  expect_equal(sc1$probResponseVecByStimCondition, list(c(-0.05, 0.05)))
+
+  set.seed(200)
+  sc2 <- simCytBuildScenario(nMarker = 2, lowMean = -1, highMean = 6)
+  expect_equal(dim(sc2$meanExprMat), c(4, 2))
+  expect_equal(sc2$probVecUns, rep(0.25, 4))
+  expect_null(sc2$probResponseVecByStimCondition)
+})
