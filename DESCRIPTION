@@ -10,6 +10,10 @@ RoxygenNote: 7.3.1
 URL: https://github.com/SATVILab/simcyto
 BugReports: https://github.com/SATVILab/simcyto/issues
 Imports:
+    Biobase,
+    flowCore,
+    MASS,
+    mvtnorm,
     stats
 Suggests:
     testthat (>= 3.0.0)
