@@ -1,0 +1,16 @@
+Package: simcyto
+Title: Simulate Cytometry Data
+Version: 0.0.0.9000
+Authors@R:
+    person("Miguel", "Rodo", , "miguel.rodo@outlook.com", role = c("aut", "cre"))
+Description: Simulate cytometry data for testing and benchmarking.
+License: GPL (>= 3)
+Encoding: UTF-8
+RoxygenNote: 7.3.1
+URL: https://github.com/SATVILab/simcyto
+BugReports: https://github.com/SATVILab/simcyto/issues
+Imports:
+    stats
+Suggests:
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
