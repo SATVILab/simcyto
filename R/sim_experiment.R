@@ -90,24 +90,12 @@ simCytExperiment <- function(
     } else {
       sampleName <- paste0("sample", currentSample)
     }
-<<<<<<< HEAD
-    sampleName |>
-      paste0("_", c("unstim", paste0("stim", seq_len(nCondition - 1L))))
-  }) |>
-    unlist()
-
-  flowFrameList <- lapply(seq_len(nSampleXCondition), function(i) NULL) |>
-    stats::setNames(sampleConditionLabelVec)
-  labelsList <- lapply(seq_len(nSampleXCondition), function(i) NULL) |>
-    stats::setNames(sampleConditionLabelVec)
-=======
     paste0(sampleName, "_", c("unstim", paste0("stim", seq_len(nCondition - 1L))))
   })
   sampleConditionLabelVec <- unlist(sampleConditionLabelVec)
 
   flowFrameList <- stats::setNames(lapply(seq_len(nSampleXCondition), function(i) NULL), sampleConditionLabelVec)
   labelsList <- stats::setNames(lapply(seq_len(nSampleXCondition), function(i) NULL), sampleConditionLabelVec)
->>>>>>> origin/main
 
   lapply(seq_len(nSample), function(sampleInd) {
     idxLower <- (sampleInd - 1) * nCondition + 1

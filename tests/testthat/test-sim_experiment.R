@@ -48,11 +48,7 @@ test_that("simCytExperiment creates expected structure and flowFrames", {
     expect_s4_class(ff, "flowFrame")
     expect_equal(nrow(flowCore::exprs(ff)), nCell)
     expect_equal(ncol(flowCore::exprs(ff)), nMarker)
-<<<<<<< HEAD
-    expect_equal(unname(colnames(flowCore::exprs(ff))), c("F1", "F2"))
-=======
     expect_equal(colnames(flowCore::exprs(ff)), c("F1", "F2"))
->>>>>>> origin/main
 
     lbls <- res$labelsList[[nm]]
     expect_length(lbls, nCell)

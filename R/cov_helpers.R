@@ -12,11 +12,7 @@
   if (n == 1) {
     return(matrix(ev, 1, 1))
   }
-<<<<<<< HEAD
-  z <- matrix(ncol = n, rnorm(n^2))
-=======
   z <- matrix(ncol = n, stats::rnorm(n^2))
->>>>>>> origin/main
   decomp <- qr(z)
   q <- qr.Q(decomp)
   r <- qr.R(decomp)

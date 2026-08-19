@@ -71,25 +71,15 @@ test_that("flowFrame metadata structure and channel parameters match stimgate ex
   exprs_mat <- flowCore::exprs(ff)
   expect_true(is.matrix(exprs_mat))
   expect_equal(dim(exprs_mat), c(50, 2))
-<<<<<<< HEAD
-  expect_equal(unname(colnames(exprs_mat)), c("F1", "F2"))
-=======
   expect_equal(colnames(exprs_mat), c("F1", "F2"))
->>>>>>> origin/main
 
   pdata <- Biobase::pData(flowCore::parameters(ff))
   expect_equal(rownames(pdata), c("$P1", "$P2"))
   expect_equal(as.character(pdata$name), c("F1", "F2"))
   expect_equal(as.character(pdata$desc), c("MarkerF1", "MarkerF2"))
-<<<<<<< HEAD
-  expect_equal(unname(pdata$range), c(8, 9))
-  expect_equal(unname(pdata$minRange), c(-2.67430615, -2.96089482), tolerance = 1e-6)
-  expect_equal(unname(pdata$maxRange), c(7, 8))
-=======
   expect_equal(unname(pdata$range), unname(apply(exprs_mat, 2, max)))
   expect_equal(unname(pdata$minRange), unname(apply(exprs_mat, 2, min)))
   expect_equal(unname(pdata$maxRange), unname(apply(exprs_mat, 2, max)))
->>>>>>> origin/main
 })
 
 test_that("cluster cell allocations are deterministic for probExact TRUE and FALSE", {
