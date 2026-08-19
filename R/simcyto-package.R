@@ -6,9 +6,12 @@
 #' mixture distributions, perturbations, and transformations.
 #'
 #' @details
-#' The simulation engine originates from FAUST-derived phenotype simulation machinery
-#' (`functionsForBenchmarking-Pheno.R`). Reusable components were audited and migrated
-#' into `simcyto`:
+#' The simulation engine acknowledges the upstream provenance line represented by
+#' `SATVILab/StimGate`: the reusable simulation machinery in `simcyto` is derived
+#' from the FAUST-inspired phenotype simulation workflow used in that project, and
+#' specifically from the `functionsForBenchmarking-Pheno.R` source in
+#' `RGLab/faust_manuscript_analyses`. Reusable components were audited and
+#' migrated into `simcyto`:
 #' \itemize{
 #'   \item **Scenario Builders**: \code{\link{simCytBuildScenario}}, \code{\link{simCytScenarioUnivariate}},
 #'         and \code{\link{simCytScenarioBivariate}} for defining cluster mean matrices and response vectors.
