@@ -1,0 +1,53 @@
+simcyto provenance and redistribution record
+=========================================
+
+This package contains reusable simulation machinery that was derived from
+simulation code used in the FAUST benchmarking manuscript workflow. The upstream
+source was the file `functionsForBenchmarking-Pheno.R` in the `RGLab/
+faust_manuscript_analyses` repository, as used by the FAUST benchmarking
+framework.
+
+The adapted code in `simcyto` is restricted to the reusable simulation engine
+and intentionally excludes the downstream statistical-evaluation, mixed-model,
+and benchmarking logic from the upstream manuscript-analysis repository.
+
+Registered provenance for migrated components
+--------------------------------------------
+
+- Scenario builders and simulation hierarchy
+  - Source: `functionsForBenchmarking-Pheno.R` in `RGLab/faust_manuscript_analyses`
+  - Adapted into: `simCytBuildScenario()`, `simCytScenarioUnivariate()`,
+    `simCytScenarioBivariate()`, `simCytExperiment()`, `simCytSample()`,
+    `simCytCondition()`, and `simCytCluster()`
+
+- Distributional and cluster simulation logic
+  - Source: `functionsForBenchmarking-Pheno.R` in `RGLab/faust_manuscript_analyses`
+  - Adapted into: `simCytClusterData()`, `simCytCluster()`
+
+- Positive-definite covariance generation helper
+  - Source: the commonly cited R-help / R programming community approach for
+    generating random positive-definite matrices, credited to Ravi Varadhan
+  - Adapted into: `.posDef()` in `R/cov_helpers.R`
+  - This helper is a small, self-contained numerical routine and is treated as a
+    nested third-party provenance item rather than as a separate software
+    component with its own licensing baggage.
+
+- Ratio correction and perturbation machinery
+  - Source: `functionsForBenchmarking-Pheno.R` in `RGLab/faust_manuscript_analyses`
+  - Adapted into: the perturbation and ratio-correction helpers used by
+    `simCytExperiment()` and related simulation routines
+
+Redistribution basis
+--------------------
+
+The package is distributed under the GNU General Public License version 3 or
+later (`GPL (>= 3)`) as recorded in `DESCRIPTION`. The FAUST package itself is
+GPL-compatible. The reused manuscript-analysis code is treated as a GPL-
+compatible source for the simulation engine only, and the package does not
+retain any downstream benchmark-analysis code that was not independently
+reviewed for redistribution suitability.
+
+This record is intended to provide the authoritative provenance statement for
+this codebase and to document the provenance chain before release. If upstream
+maintainers provide a more specific licensing or attribution clarification, this
+record should be updated to reflect that position.

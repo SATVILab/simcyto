@@ -11,6 +11,12 @@ You can install the development version of `simcyto` from GitHub with:
 pak::pak("SATVILab/simcyto")
 ```
 
+## Provenance and Licensing
+
+The simulation machinery in `simcyto` derives from the FAUST benchmarking workflow and the corresponding `functionsForBenchmarking-Pheno.R` source used in the `RGLab/faust_manuscript_analyses` repository. This provenance is recorded in `inst/COPYRIGHTS` and should be treated as the package's authoritative redistribution record.
+
+The positive-definite covariance helper used in the cluster simulation core is a nested third-party provenance item: the construction is the standard R-help / R programming community algorithm credited to Ravi Varadhan, and it is retained here as a small numerical utility that is not itself a separate software package.
+
 ## Phenotype Simulation Machinery & Function Audit
 
 The phenotype simulation machinery in `simcyto` derives from the simulation components used in the FAUST benchmarking framework (`functionsForBenchmarking-Pheno.R`). Functions in that script have been audited and classified as follows:
