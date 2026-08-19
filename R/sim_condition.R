@@ -69,10 +69,9 @@ simCytCondition <- function(
 
   nCellVecObserved <- nCellVec[nCellVec > 0L]
   clusterLabelVecObserved <- clusterLabelVec[nCellVec > 0L]
-  cellLabelVec <- lapply(seq_along(nCellVecObserved), function(i) {
+  cellLabelVec <- unlist(lapply(seq_along(nCellVecObserved), function(i) {
     rep(clusterLabelVecObserved[i], nCellVecObserved[i])
-  }) |>
-    unlist()
+  }))
 
   rawDataList <- vector("list", numClusters)
   transformedDataList <- vector("list", numClusters)
