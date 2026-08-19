@@ -36,7 +36,9 @@ jobs:
           needs: check
           cache: true
 
-      - uses: r-lib/actions/document@v2
+      - name: Document package
+        run: roxygen2::roxygenise()
+        shell: Rscript {0}
 
       - uses: r-lib/actions/check-r-package@v2
         with:
