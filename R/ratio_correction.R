@@ -191,6 +191,12 @@
   if (is.null(dim(simDataMat))) {
     simDataMat <- matrix(as.numeric(simData), ncol = 1L)
   }
+  if (isTRUE(.simCytUsesUpperRatioCorrection(transformationFunc))) {
+    minSim <- min(simDataMat, na.rm = TRUE)
+    if (is.finite(minSim) && minSim < 0) {
+      simDataMat <- simDataMat - minSim
+    }
+  }
   out <- apply(simDataMat, 2, transformationFunc)
   out <- as.matrix(out)
   if (ncol(out) != ncol(simDataMat)) {

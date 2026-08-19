@@ -30,6 +30,17 @@ R programming community algorithm credited to Ravi Varadhan, and it is retained
 here as a small numerical utility that is not itself a separate software
 package.
 
+## Legacy StimGate regression fixtures
+
+The package keeps a compact, pinned set of regression fixtures under
+`tests/testthat/fixtures/` for cross-repository parity checks. These fixtures are
+intentionally small enough for routine test runs but cover migration-critical
+paths: exact allocations, multinomial sampling, mixed t/Gaussian simulation,
+transformations, and ratio-corrected perturbations. The reference data are
+recorded as legacy StimGate-compatible outputs from the upstream FAUST workflow,
+corresponding to the source reference
+`RGLab/faust_manuscript_analyses@f86f1ab19a41fd2690bf180a7dcf483f9552950c`.
+
 ## Phenotype Simulation Machinery & Function Audit
 
 The phenotype simulation machinery in `simcyto` derives from the simulation components used in the FAUST benchmarking framework (`functionsForBenchmarking-Pheno.R`). Functions in that script have been audited and classified as follows:

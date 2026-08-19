@@ -74,12 +74,12 @@ simCytSample <- function(
     nCellByCondition
   }
 
-  probVecByCondition <- list(probVecUns)
-  if (!is.null(probResponseVecByStimCondition)) {
-    probVecByCondition <- probVecByCondition |>
-      append(lapply(probResponseVecByStimCondition, function(probResponseVec) {
-        probVecUns + probResponseVec
-      }))
+  probVecByCondition <- if (is.null(probResponseVecByStimCondition)) {
+    lapply(seq_len(nCondition), function(i) probVecUns)
+  } else {
+    c(list(probVecUns), lapply(probResponseVecByStimCondition, function(probResponseVec) {
+      probVecUns + probResponseVec
+    }))
   }
 
   conditionLabelVec <- c("unstim", paste0("stim", seq_len(nCondition - 1L)))
@@ -143,10 +143,21 @@ simCytSample <- function(
       )
     )
 
+    exprMat <- outListCondition$conditionMatrix
+    colnames(exprMat) <- paste0("F", seq_len(nMarker))
     ff <- flowCore::flowFrame(
-      exprs = outListCondition$conditionMatrix,
+      exprs = exprMat,
       parameters = paramAnnotated
     )
+    pDataFF <- Biobase::pData(flowCore::parameters(ff))
+    rownames(pDataFF) <- paste0("$P", seq_len(nMarker))
+    pDataFF$name <- paste0("F", seq_len(nMarker))
+    pDataFF$desc <- paste0("MarkerF", seq_len(nMarker))
+    pDataFF$range <- stats::setNames(apply(exprMat, 2, max), paste0("F", seq_len(nMarker)))
+    pDataFF$minRange <- stats::setNames(apply(exprMat, 2, min), paste0("F", seq_len(nMarker)))
+    pDataFF$maxRange <- stats::setNames(apply(exprMat, 2, max), paste0("F", seq_len(nMarker)))
+    Biobase::pData(flowCore::parameters(ff)) <- pDataFF
+    colnames(flowCore::exprs(ff)) <- paste0("F", seq_len(nMarker))
     flowList[[i]] <<- ff
     labelsList[[i]] <<- outListCondition$conditionLabels
     NULL
