@@ -1,10 +1,13 @@
 #' @title Simulate a set of stimulation conditions for multiple biological samples
 #'
-#' @description Simulate stimulation conditions (e.g., stimulated and unstimulated) for
-#' multiple biological samples, where each sample has one unstimulated condition
-#' and one or more stimulated conditions. The outputs are returned as lists of `flowFrame`
-#' objects representing each sample-condition combination, and matching lists of cellular
-#' cluster labels.
+#' @description
+#' Simulate unstimulated/stimulated cytometry experiments across biological
+#' samples. The simulator follows the hierarchy
+#' `simCytExperiment()` -> `simCytSample()` -> `simCytCondition()` ->
+#' `simCytCluster()`.
+#'
+#' The current phenotype contract is explicit: populations are all binary marker
+#' combinations, so `nCluster` must equal `2^nMarker`.
 #'
 #' @param nSample Integer. Number of biological samples to simulate.
 #' @param nMarker Integer. Number of markers/dimensions.
@@ -15,6 +18,9 @@
 #'   generalisation of the model.
 #' @param nCellByCondition Numeric or integer vector. Number of cells per
 #'   condition. If length is 1, the value is recycled across all conditions.
+#'   If `probExact = TRUE`, each condition allocates exactly this number of cells
+#'   by rounded cluster counts. If `probExact = FALSE`, allocations are sampled
+#'   from a multinomial draw.
 #' @param transformationFunc Function. Transformation applied marker-wise to
 #'   simulated expression values.
 #' @param mixtureType Character. Mixture distribution used for simulation.
@@ -28,15 +34,17 @@
 #' @param probResponseVecByStimCondition NULL or list. If provided, must be a list
 #'   of length `nCondition - 1`, where each element is a numeric vector of
 #'   length `nCluster`. Each vector is added to `probVecUns` to construct the
-#'   stimulated-condition cluster probabilities.
+#'   stimulated-condition cluster probabilities (response shifts).
 #' @param samplePerturbationSd Numeric. Standard deviation of sample-level
 #'   perturbations added to cluster means. Default is 0.
 #' @param conditionPerturbationSd Numeric. Standard deviation of condition-level
 #'   perturbations added to cluster means within each sample. Default is 0.
 #' @param clusterPerturbationSd Numeric. Standard deviation of cluster-level
 #'   perturbations applied during cell-level simulation. Default is 0.
-#' @param covEvMin Numeric. Minimum eigenvalue for cluster covariance matrices. Default is 1.
-#' @param covEvMax Numeric. Maximum eigenvalue for cluster covariance matrices. Default is 2.
+#' @param covEvMin Numeric. Minimum eigenvalue used when drawing positive-definite
+#'   covariance matrices for cluster simulation. Default is 1.
+#' @param covEvMax Numeric. Maximum eigenvalue used when drawing positive-definite
+#'   covariance matrices for cluster simulation. Default is 2.
 #' @param scenario Optional scenario list created by a scenario builder such as
 #'   `simCytScenarioBivariate()` or `simCytScenarioUnivariate()`. When supplied,
 #'   any missing experiment values are filled from the scenario object while
@@ -48,6 +56,27 @@
 #'   - `flowFrameList`: A named list of `flowCore::flowFrame` objects.
 #'   - `labelsList`: A named list of character vectors of per-cell cluster labels.
 #'   Names of list elements are formatted as `sample001_unstim`, `sample001_stim1`, etc.
+#'
+#'   Expression values can be accessed with `flowCore::exprs()` and per-cell truth
+#'   labels from `labelsList[[sample_condition_name]]`.
+#'
+#' @examples
+#' scenario <- simCytScenarioBivariate()
+#' set.seed(123)
+#' sim_res <- simCytExperiment(
+#'   scenario = scenario,
+#'   nSample = 2,
+#'   nCondition = 2,
+#'   nCellByCondition = c(100, 120),
+#'   transformationFunc = simCytTransformIdentity(),
+#'   mixtureType = "gaussianOnly",
+#'   probExact = FALSE
+#' )
+#'
+#' names(sim_res$flowFrameList)
+#' expr_mat <- flowCore::exprs(sim_res$flowFrameList[[1]])
+#' head(expr_mat)
+#' table(sim_res$labelsList[[1]])
 #'
 #' @export
 simCytExperiment <- function(

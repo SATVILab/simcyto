@@ -7,13 +7,19 @@
 simCytTransformGamma(shape = 1, scale = 1)
 }
 \arguments{
-\item{shape}{Numeric. Shape parameter for Gamma distribution. Default is 1.}
+\item{shape}{Numeric scalar. Gamma shape parameter.}
 
-\item{scale}{Numeric. Scale parameter for Gamma distribution. Default is 1.}
+\item{scale}{Numeric scalar. Gamma scale parameter.}
 }
 \value{
-A function that adds Gamma-distributed noise to `x`, tagged with `sim_transformation = "gamma"`.
+Function that adds gamma-distributed noise to `x`.
 }
 \description{
 Gamma noise transformation
+}
+\examples{
+f <- simCytTransformGamma(shape = 2, scale = 0.5)
+set.seed(1)
+f(c(0, 0, 0))
+
 }

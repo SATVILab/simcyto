@@ -7,13 +7,19 @@
 simCytTransformGammaFixed(mean = 1, sd = 1)
 }
 \arguments{
-\item{mean}{Numeric. Mean of Gamma noise. Default is 1.}
+\item{mean}{Numeric scalar. Mean of gamma noise (`> 0`).}
 
-\item{sd}{Numeric. Standard deviation of Gamma noise. Default is 1.}
+\item{sd}{Numeric scalar. Standard deviation of gamma noise (`> 0`).}
 }
 \value{
-A function that adds Gamma-distributed noise to `x`, tagged with `sim_transformation = "gamma"`.
+Function that adds gamma-distributed noise to `x`.
 }
 \description{
 Reparameterises Gamma distribution using mean and standard deviation.
+}
+\examples{
+f <- simCytTransformGammaFixed(mean = 2, sd = 1)
+set.seed(1)
+f(c(0, 0, 0))
+
 }

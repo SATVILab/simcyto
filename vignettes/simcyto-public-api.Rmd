@@ -1,0 +1,124 @@
+---
+title: "Simulating unstimulated/stimulated cytometry experiments"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Simulating unstimulated/stimulated cytometry experiments}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+The supported high-level `simcyto` workflow is:
+
+```r
+scenario -> simCytExperiment() -> result
+```
+
+Internally, experiment simulation follows the hierarchy
+`simCytExperiment() -> simCytSample() -> simCytCondition() -> simCytCluster()`.
+The lower-level functions are implementation details rather than the public
+workflow.
+
+## 1) Build a scenario specification
+
+Scenarios define the phenotype grid, baseline means and probabilities:
+
+```{r}
+library(simcyto)
+
+scenario <- simCytBuildScenario(
+  nMarker = 2,
+  lowMean = 0,
+  highMean = 5,
+  probUns = c(0.70, 0.10, 0.10, 0.10),
+  probResponse = list(
+    c(-0.10, 0.00, 0.00, 0.10) # response shift for stimulated condition 1
+  )
+)
+
+scenario$nMarker
+scenario$nCluster
+scenario$clusterLabelVec
+scenario$meanExprMat
+```
+
+Current constraint: the public API supports binary marker combinations, so
+`nCluster` must equal `2^nMarker`.
+
+## 2) Choose a transformation
+
+Transformations are marker-wise functions. For example:
+
+```{r}
+identity_tf <- simCytTransformIdentity()
+gamma_tf <- simCytTransformGammaFixed(mean = 1, sd = 0.5)
+
+identity_tf(c(1, 2, 3))
+```
+
+## 3) Simulate an unstimulated/stimulated experiment
+
+```{r}
+set.seed(2026)
+
+sim_res <- simCytExperiment(
+  scenario = scenario,
+  nSample = 2,
+  nCondition = 2,                  # unstim + stim1
+  nCellByCondition = c(250, 300),  # exact cells per condition
+  transformationFunc = identity_tf,
+  mixtureType = "gaussianOnly",
+  probExact = FALSE,               # multinomial sampling
+  samplePerturbationSd = 0.2,
+  conditionPerturbationSd = 0.1,
+  clusterPerturbationSd = 0.05,
+  covEvMin = 1,
+  covEvMax = 2
+)
+```
+
+`probExact = TRUE` switches to deterministic rounded cluster allocations per
+condition instead of sampled multinomial allocations.
+
+## 4) Inspect returned objects and truth labels
+
+The result object is a list with:
+
+- `flowFrameList`: named `flowCore::flowFrame` objects for each
+  sample-condition combination.
+- `labelsList`: per-cell ground-truth cluster labels aligned with each
+  `flowFrame`.
+
+```{r}
+names(sim_res$flowFrameList)
+names(sim_res$labelsList)
+
+ff_unstim <- sim_res$flowFrameList[["sample001_unstim"]]
+expr_unstim <- flowCore::exprs(ff_unstim)
+dim(expr_unstim)
+head(expr_unstim)
+
+table(sim_res$labelsList[["sample001_unstim"]])
+```
+
+## Supported scope
+
+`simcyto` documents and supports:
+
+- sample/condition design (`nSample`, `nCondition`)
+- marker/population specification (`nMarker`, `nCluster = 2^nMarker`)
+- means (`meanExprMat`) and covariance behaviour (`covEvMin`, `covEvMax`)
+- mixture distributions (`gaussianOnly`, `tOnly`, `tPlusGauss`)
+- baseline and response probabilities (`probVecUns`, response shifts)
+- perturbation layers (sample, condition, cluster)
+- transformations and exact vs sampled allocation (`probExact`)
+
+Phenotype/knockout/spike-in/batch/nuisance functionality is not exposed as a
+stable public API in this package version and is therefore not documented as a
+supported user feature.

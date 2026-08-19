@@ -1,24 +1,36 @@
-#' Build a simulation scenario for n markers
+#' Build a simulation scenario for `nMarker` markers
 #'
-#' Parameterised builder for constructing cluster mean matrices, cluster labels,
-#' unstimulated probabilities, and response probability vectors for n markers.
+#' Construct the phenotype grid and probability objects consumed by
+#' [simCytExperiment()]. The scenario contract is currently tied to binary marker
+#' combinations, so the number of populations is fixed at `nCluster = 2^nMarker`.
 #'
-#' @param nMarker Integer. Number of markers. Must be >= 1.
-#' @param lowMean Numeric. Baseline mean for negative marker expressions. Default is 0.
-#' @param highMean Numeric. Baseline mean for positive marker expressions. Default is 5.
-#' @param probUns Numeric vector. Baseline cluster probabilities for the unstimulated condition
-#'   (length 2^nMarker, summing to 1). If NULL, uniform probabilities are assigned.
-#' @param probResponse List or numeric vector. Response probabilities for stimulated conditions.
-#'   If a numeric vector of length 2^nMarker, it is wrapped in a list for 1 stimulated condition.
-#'   Default is NULL.
+#' @param nMarker Integer scalar. Number of markers. Must be `>= 1`.
+#' @param lowMean Numeric scalar. Mean expression assigned to marker-negative
+#'   populations.
+#' @param highMean Numeric scalar. Mean expression assigned to marker-positive
+#'   populations.
+#' @param probUns Optional numeric vector of length `2^nMarker`. Baseline
+#'   unstimulated probabilities; must sum to 1. If `NULL`, a uniform distribution
+#'   is used.
+#' @param probResponse Optional list (or numeric vector) defining stimulated
+#'   probability shifts. Each response vector must have length `2^nMarker` and is
+#'   added to `probUns` inside [simCytExperiment()]. You are responsible for
+#'   ensuring each resulting stimulated probability vector is valid (non-negative
+#'   and summing to 1).
 #'
-#' @return A list with elements:
-#'   - `nMarker`: Number of markers.
-#'   - `nCluster`: Number of clusters (2^nMarker).
-#'   - `meanExprMat`: Matrix of dimension `nCluster x nMarker`.
-#'   - `clusterLabelVec`: Character vector of cluster labels of length `nCluster`.
-#'   - `probVecUns`: Numeric vector of unstimulated cluster probabilities.
-#'   - `probResponseVecByStimCondition`: List of response probability vectors or NULL.
+#' @return A list with elements `nMarker`, `nCluster`, `meanExprMat`,
+#'   `clusterLabelVec`, `probVecUns`, and `probResponseVecByStimCondition`.
+#'
+#' @examples
+#' scenario <- simCytBuildScenario(
+#'   nMarker = 2,
+#'   lowMean = 0,
+#'   highMean = 5,
+#'   probUns = c(0.7, 0.1, 0.1, 0.1),
+#'   probResponse = c(-0.1, 0, 0, 0.1)
+#' )
+#' scenario$nCluster
+#' scenario$clusterLabelVec
 #'
 #' @export
 simCytBuildScenario <- function(
@@ -83,16 +95,20 @@ simCytBuildScenario <- function(
   )
 }
 
-#' Construct a univariate simulation scenario (1 marker)
+#' Construct a univariate scenario (`nMarker = 1`)
 #'
-#' Helper for 1-marker simulation scenarios.
+#' Convenience wrapper around [simCytBuildScenario()] for two populations:
+#' `F1-` and `F1+`.
 #'
-#' @param lowMean Numeric. Mean for F1- cluster. Default is 0.
-#' @param highMean Numeric. Mean for F1+ cluster. Default is 5.
-#' @param probUns Numeric vector of length 2. Unstimulated cluster probabilities. Default is `c(0.8, 0.2)`.
-#' @param probResponse List or numeric vector of length 2. Response vector for stimulated conditions. Default is `c(-0.1, 0.1)`.
+#' @inheritParams simCytBuildScenario
 #'
-#' @return A scenario list created by `simCytBuildScenario`.
+#' @return A scenario list from [simCytBuildScenario()] with `nMarker = 1`.
+#'
+#' @examples
+#' scenario <- simCytScenarioUnivariate()
+#' scenario$meanExprMat
+#' scenario$probResponseVecByStimCondition
+#'
 #' @export
 simCytScenarioUnivariate <- function(
   lowMean = 0,
@@ -109,16 +125,20 @@ simCytScenarioUnivariate <- function(
   )
 }
 
-#' Construct a bivariate simulation scenario (2 markers)
+#' Construct a bivariate scenario (`nMarker = 2`)
 #'
-#' Helper for 2-marker simulation scenarios.
+#' Convenience wrapper around [simCytBuildScenario()] for four populations:
+#' `F1-F2-`, `F1+F2-`, `F1-F2+`, and `F1+F2+`.
 #'
-#' @param lowMean Numeric. Mean for negative marker expressions. Default is 0.
-#' @param highMean Numeric. Mean for positive marker expressions. Default is 5.
-#' @param probUns Numeric vector of length 4. Unstimulated cluster probabilities. Default is `c(0.7, 0.1, 0.1, 0.1)`.
-#' @param probResponse List or numeric vector of length 4. Response vector for stimulated conditions. Default is `c(-0.1, 0.0, 0.0, 0.1)`.
+#' @inheritParams simCytBuildScenario
 #'
-#' @return A scenario list created by `simCytBuildScenario`.
+#' @return A scenario list from [simCytBuildScenario()] with `nMarker = 2`.
+#'
+#' @examples
+#' scenario <- simCytScenarioBivariate()
+#' scenario$clusterLabelVec
+#' scenario$probVecUns
+#'
 #' @export
 simCytScenarioBivariate <- function(
   lowMean = 0,
