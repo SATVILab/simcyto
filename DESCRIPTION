@@ -1,14 +1,24 @@
 Package: simcyto
-Title: Simulate Cytometry Data
-Version: 0.0.0.9000
+Title: Simulate Cytometry Data for Testing and Benchmarking
+Version: 0.99.0
 Authors@R:
-    person("Miguel", "Rodo", , "miguel.rodo@outlook.com", role = c("aut", "cre"))
-Description: Simulate cytometry data for testing and benchmarking.
+    person("Miguel", "Rodo", , "miguel.rodo@outlook.com",
+           role = c("aut", "cre"))
+Description: Provides a simulation engine for generating synthetic single-cell
+    cytometry data across multi-sample, multi-condition experimental designs.
+    Users define phenotype clusters, mixture distributions (Gaussian, t, or
+    t-plus-Gaussian), perturbations (sample, condition and cluster level), and
+    marker transformations (identity, gamma, Gaussian, or skew-normal).  The
+    resulting data are returned as flowCore flowFrame objects with per-cell
+    ground-truth cluster labels, making the package suitable for testing and
+    benchmarking of cytometry analysis methods.
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
+Date: 2026-08-19
 URL: https://github.com/SATVILab/simcyto
 BugReports: https://github.com/SATVILab/simcyto/issues
+biocViews: FlowCytometry, SingleCell, Preprocessing, Software
 Imports:
     Biobase,
     flowCore,
