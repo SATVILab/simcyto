@@ -193,10 +193,18 @@ if (is.null(dim(simDataMat))) {
   simDataMat <- matrix(as.numeric(simData), ncol = 1L)
 }
 
-transName <- attr(transformationFunc, "sim_transformation")
-if (isTRUE(transName %in% c("gamma", "skew"))) {
-  simDataMat <- pmax(simDataMat, 0)
-}
+  transName <- attr(transformationFunc, "sim_transformation")
+
+  if (isTRUE(.simCytUsesUpperRatioCorrection(transformationFunc))) {
+    minSim <- min(simDataMat, na.rm = TRUE)
+    if (is.finite(minSim) && minSim < 0) {
+      simDataMat <- simDataMat - minSim
+    }
+  }
+
+  if (isTRUE(transName %in% c("gamma", "skew"))) {
+    simDataMat <- pmax(simDataMat, 0)
+  }
 
 out <- apply(simDataMat, 2, transformationFunc)
 out <- as.matrix(out)
