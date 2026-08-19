@@ -73,21 +73,13 @@ test_that("flowFrame metadata structure and channel parameters match stimgate ex
   expect_equal(dim(exprs_mat), c(50, 2))
   expect_equal(colnames(exprs_mat), c("F1", "F2"))
 
-  pdata <- Biobase::pData(flowCore::parameters(ff))
-  expect_equal(rownames(pdata), c("$P1", "$P2"))
-<<<<<<< HEAD
-  expect_equal(pdata$name, c("F1", "F2"))
-  expect_equal(pdata$desc, c("MarkerF1", "MarkerF2"))
-  expect_equal(unname(pdata$range), unname(apply(exprs_mat, 2, max)), tolerance = 1e-6)
-  expect_equal(unname(pdata$minRange), unname(apply(exprs_mat, 2, min)), tolerance = 1e-6)
-  expect_equal(unname(pdata$maxRange), unname(apply(exprs_mat, 2, max)), tolerance = 1e-6)
-=======
-  expect_equal(as.character(pdata$name), c("F1", "F2"))
-  expect_equal(as.character(pdata$desc), c("MarkerF1", "MarkerF2"))
-  expect_equal(unname(pdata$range), unname(apply(exprs_mat, 2, max)))
-  expect_equal(unname(pdata$minRange), unname(apply(exprs_mat, 2, min)))
-  expect_equal(unname(pdata$maxRange), unname(apply(exprs_mat, 2, max)))
->>>>>>> origin/main
+pdata <- Biobase::pData(flowCore::parameters(ff))
+expect_equal(rownames(pdata), c("$P1", "$P2"))
+expect_equal(as.character(pdata$name), c("F1", "F2"))
+expect_equal(as.character(pdata$desc), c("MarkerF1", "MarkerF2"))
+expect_equal(unname(pdata$range), unname(apply(exprs_mat, 2, max)), tolerance = 1e-6)
+expect_equal(unname(pdata$minRange), unname(apply(exprs_mat, 2, min)), tolerance = 1e-6)
+expect_equal(unname(pdata$maxRange), unname(apply(exprs_mat, 2, max)), tolerance = 1e-6)
 })
 
 test_that("cluster cell allocations are deterministic for probExact TRUE and FALSE", {
