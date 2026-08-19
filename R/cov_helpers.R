@@ -12,7 +12,7 @@
   if (n == 1) {
     return(matrix(ev, 1, 1))
   }
-  z <- matrix(ncol = n, rnorm(n^2))
+  z <- matrix(ncol = n, stats::rnorm(n^2))
   decomp <- qr(z)
   q <- qr.Q(decomp)
   r <- qr.R(decomp)
