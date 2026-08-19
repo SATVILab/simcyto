@@ -1,13 +1,17 @@
 simcyto provenance and redistribution record
-=========================================
+============================================
 
 This package contains reusable simulation machinery that was derived from
-simulation code used in the FAUST benchmarking manuscript workflow. The upstream
-source was the file `functionsForBenchmarking-Pheno.R` in the `RGLab/
-faust_manuscript_analyses` repository, as used by the FAUST benchmarking
-framework. The repository and file path are recorded here; a release-specific
-upstream commit or ref should be frozen when the package is prepared for a
-release tag.
+simulation code used in the FAUST benchmarking manuscript workflow. The public
+upstream source identified in the `RGLab/faust_manuscript_analyses` repository is
+`faustRuns/simulation/functionsForBenchmarking.R` (ref
+`f86f1ab19a41fd2690bf180a7dcf483f9552950c`), as used by the FAUST
+benchmarking framework. The repository, file path and upstream ref are recorded
+here.
+
+Upstream-Repository: RGLab/faust_manuscript_analyses
+Upstream-File: faustRuns/simulation/functionsForBenchmarking.R
+Upstream-Ref: f86f1ab19a41fd2690bf180a7dcf483f9552950c
 
 The adapted code in `simcyto` is restricted to the reusable simulation engine
 and intentionally excludes the downstream statistical-evaluation, mixed-model,
@@ -17,13 +21,19 @@ Registered provenance for migrated components
 --------------------------------------------
 
 - Scenario builders and simulation hierarchy
-  - Source: `functionsForBenchmarking-Pheno.R` in `RGLab/faust_manuscript_analyses`
+  - Source: public upstream `faustRuns/simulation/functionsForBenchmarking.R` in
+    `RGLab/faust_manuscript_analyses` (ref
+    `f86f1ab19a41fd2690bf180a7dcf483f9552950c`); the local downstream
+    `functionsForBenchmarking-Pheno.R` is the project-local adapted variant.
   - Adapted into: `simCytBuildScenario()`, `simCytScenarioUnivariate()`,
     `simCytScenarioBivariate()`, `simCytExperiment()`, `simCytSample()`,
     `simCytCondition()`, and `simCytCluster()`
 
 - Distributional and cluster simulation logic
-  - Source: `functionsForBenchmarking-Pheno.R` in `RGLab/faust_manuscript_analyses`
+  - Source: public upstream `faustRuns/simulation/functionsForBenchmarking.R` in
+    `RGLab/faust_manuscript_analyses` (ref
+    `f86f1ab19a41fd2690bf180a7dcf483f9552950c`); the local downstream
+    `functionsForBenchmarking-Pheno.R` is the project-local adapted variant.
   - Adapted into: `simCytClusterData()`, `simCytCluster()`
 
 - Positive-definite covariance generation helper
@@ -35,7 +45,10 @@ Registered provenance for migrated components
     component with its own licensing baggage.
 
 - Ratio correction and perturbation machinery
-  - Source: `functionsForBenchmarking-Pheno.R` in `RGLab/faust_manuscript_analyses`
+  - Source: public upstream `faustRuns/simulation/functionsForBenchmarking.R` in
+    `RGLab/faust_manuscript_analyses` (ref
+    `f86f1ab19a41fd2690bf180a7dcf483f9552950c`); the local downstream
+    `functionsForBenchmarking-Pheno.R` is the project-local adapted variant.
   - Adapted into: the perturbation and ratio-correction helpers used by
     `simCytExperiment()` and related simulation routines
 
