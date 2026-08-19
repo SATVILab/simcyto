@@ -74,12 +74,14 @@ simCytSample <- function(
     nCellByCondition
   }
 
-  probVecByCondition <- list(probVecUns)
+  probVecByCondition <- lapply(seq_len(nCondition), function(i) probVecUns)
   if (!is.null(probResponseVecByStimCondition)) {
-    probVecByCondition <- probVecByCondition |>
-      append(lapply(probResponseVecByStimCondition, function(probResponseVec) {
+    probVecByCondition[2:length(probVecByCondition)] <- lapply(
+      probResponseVecByStimCondition,
+      function(probResponseVec) {
         probVecUns + probResponseVec
-      }))
+      }
+    )
   }
 
   conditionLabelVec <- c("unstim", paste0("stim", seq_len(nCondition - 1L)))

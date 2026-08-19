@@ -200,6 +200,18 @@ simCytCondition <- function(
     }
   }
 
+  if (length(outData) > 0L && any(!is.finite(outData))) {
+    nonFiniteCount <- sum(!is.finite(outData))
+    warning(
+      sprintf(
+        "Replaced %d non-finite values with 0 before exporting the condition matrix.",
+        nonFiniteCount
+      ),
+      call. = FALSE
+    )
+    outData[!is.finite(outData)] <- 0
+  }
+
   reorderVec <- sample.int(nCell)
   if (nMarker == 1L) {
     outData <- outData[reorderVec]
