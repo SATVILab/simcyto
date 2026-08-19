@@ -69,10 +69,16 @@ simCytCondition <- function(
 
   nCellVecObserved <- nCellVec[nCellVec > 0L]
   clusterLabelVecObserved <- clusterLabelVec[nCellVec > 0L]
+<<<<<<< HEAD
   cellLabelVec <- lapply(seq_along(nCellVecObserved), function(i) {
     rep(clusterLabelVecObserved[i], nCellVecObserved[i])
   }) |>
     unlist()
+=======
+  cellLabelVec <- unlist(lapply(seq_along(nCellVecObserved), function(i) {
+    rep(clusterLabelVecObserved[i], nCellVecObserved[i])
+  }))
+>>>>>>> origin/main
 
   rawDataList <- vector("list", numClusters)
   transformedDataList <- vector("list", numClusters)
@@ -200,6 +206,7 @@ simCytCondition <- function(
     }
   }
 
+<<<<<<< HEAD
   if (length(outData) > 0L && any(!is.finite(outData))) {
     nonFiniteCount <- sum(!is.finite(outData))
     warning(
@@ -212,6 +219,8 @@ simCytCondition <- function(
     outData[!is.finite(outData)] <- 0
   }
 
+=======
+>>>>>>> origin/main
   reorderVec <- sample.int(nCell)
   if (nMarker == 1L) {
     outData <- outData[reorderVec]

@@ -6,7 +6,10 @@ Authors@R:
 Description: Simulate cytometry data for testing and benchmarking.
 License: GPL (>= 3)
 Encoding: UTF-8
+<<<<<<< HEAD
 RoxygenNote: 7.3.1
+=======
+>>>>>>> origin/main
 URL: https://github.com/SATVILab/simcyto
 BugReports: https://github.com/SATVILab/simcyto/issues
 Imports:
@@ -18,3 +21,7 @@ Imports:
 Suggests:
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
+<<<<<<< HEAD
+=======
+Config/roxygen2/version: 8.1.0
+>>>>>>> origin/main
