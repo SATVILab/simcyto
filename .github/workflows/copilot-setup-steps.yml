@@ -1,0 +1,54 @@
+name: "Copilot Setup Steps"
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  copilot-setup-steps:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - name: Install system dependencies setup-r does not
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install --no-install-recommends -y \
+            libcurl4-openssl-dev libfontconfig1-dev libfreetype6-dev \
+            libgit2-dev libjpeg-dev libpng-dev libx11-dev pandoc
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: 'release'
+          use-public-rspm: true
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: |
+            any::rcmdcheck
+            any::devtools
+            any::styler
+            any::lintr
+          needs: check
+          cache: true
+          cache-version: '1'
+
+      - name: Verify R development environment
+        run: |
+          Rscript -e 'stopifnot(requireNamespace("devtools", quietly = TRUE))'
+          Rscript -e 'stopifnot(requireNamespace("testthat", quietly = TRUE))'
+          Rscript -e 'stopifnot(requireNamespace("Biobase", quietly = TRUE))'
+          Rscript -e 'stopifnot(requireNamespace("flowCore", quietly = TRUE))'
+          Rscript -e 'stopifnot(requireNamespace("MASS", quietly = TRUE))'
+          Rscript -e 'stopifnot(requireNamespace("mvtnorm", quietly = TRUE))'
+          Rscript -e 'devtools::load_all(); cat("simcyto loaded successfully\n")'
