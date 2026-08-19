@@ -35,7 +35,7 @@ simCytCondition(
 \item{probVec}{Numeric vector. Cluster probabilities.}
 
 \item{probExact}{Logical. If TRUE, use exact probabilities for cluster assignment; if FALSE, sample from a multinomial distribution.
-Default is `FALSE`.}
+Default is \code{FALSE}.}
 
 \item{clusterPerturbationSd}{Numeric. Cluster-level perturbation SD.}
 
@@ -46,7 +46,7 @@ Default is `FALSE`.}
 \item{meanExprMatReference}{Numeric matrix. Reference cluster mean matrix.}
 }
 \value{
-A list with `conditionMatrix` and `conditionLabels`.
+A list with \code{conditionMatrix} and \code{conditionLabels}.
 }
 \description{
 Simulate flow cytometric data for a single stimulation condition.

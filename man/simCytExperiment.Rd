@@ -34,13 +34,13 @@ simCytExperiment(
 condition is unstimulated and the rest are stimulated.}
 
 \item{nCluster}{Integer. Number of phenotype clusters. The current simulation
-contract explicitly requires `nCluster == 2^nMarker`; this is not a latent
+contract explicitly requires \code{nCluster == 2^nMarker}; this is not a latent
 generalisation of the model.}
 
 \item{nCellByCondition}{Numeric or integer vector. Number of cells per
 condition. If length is 1, the value is recycled across all conditions.
-If `probExact = TRUE`, each condition allocates exactly this number of cells
-by rounded cluster counts. If `probExact = FALSE`, allocations are sampled
+If \code{probExact = TRUE}, each condition allocates exactly this number of cells
+by rounded cluster counts. If \code{probExact = FALSE}, allocations are sampled
 from a multinomial draw.}
 
 \item{transformationFunc}{Function. Transformation applied marker-wise to
@@ -50,18 +50,18 @@ simulated expression values.}
 Supported values are "gaussianOnly", "tOnly", and "tPlusGauss".}
 
 \item{meanExprMat}{Numeric matrix. Baseline cluster means with dimensions
-`nCluster x nMarker`.}
+\verb{nCluster x nMarker}.}
 
-\item{clusterLabelVec}{Character vector. Cluster labels of length `nCluster`.}
+\item{clusterLabelVec}{Character vector. Cluster labels of length \code{nCluster}.}
 
 \item{probVecUns}{Numeric vector. Baseline cluster probabilities for the
-unstimulated condition. Must have length `nCluster` and sum to 1.}
+unstimulated condition. Must have length \code{nCluster} and sum to 1.}
 
-\item{probExact}{Logical. If TRUE, use exact probabilities for cluster assignment; if FALSE, sample from a multinomial distribution. Default is `FALSE`.}
+\item{probExact}{Logical. If TRUE, use exact probabilities for cluster assignment; if FALSE, sample from a multinomial distribution. Default is \code{FALSE}.}
 
 \item{probResponseVecByStimCondition}{NULL or list. If provided, must be a list
-of length `nCondition - 1`, where each element is a numeric vector of
-length `nCluster`. Each vector is added to `probVecUns` to construct the
+of length \code{nCondition - 1}, where each element is a numeric vector of
+length \code{nCluster}. Each vector is added to \code{probVecUns} to construct the
 stimulated-condition cluster probabilities (response shifts).}
 
 \item{samplePerturbationSd}{Numeric. Standard deviation of sample-level
@@ -80,7 +80,7 @@ covariance matrices for cluster simulation. Default is 1.}
 covariance matrices for cluster simulation. Default is 2.}
 
 \item{scenario}{Optional scenario list created by a scenario builder such as
-`simCytScenarioBivariate()` or `simCytScenarioUnivariate()`. When supplied,
+\code{simCytScenarioBivariate()} or \code{simCytScenarioUnivariate()}. When supplied,
 any missing experiment values are filled from the scenario object while
 preserving explicit arguments as the authoritative overrides. The scenario
 contract is intentionally limited to the phenotype grid and probability
@@ -88,21 +88,23 @@ fields consumed by the experiment layer.}
 }
 \value{
 A list with two elements:
-  - `flowFrameList`: A named list of `flowCore::flowFrame` objects.
-  - `labelsList`: A named list of character vectors of per-cell cluster labels.
-  Names of list elements are formatted as `sample001_unstim`, `sample001_stim1`, etc.
+\itemize{
+\item \code{flowFrameList}: A named list of \code{flowCore::flowFrame} objects.
+\item \code{labelsList}: A named list of character vectors of per-cell cluster labels.
+Names of list elements are formatted as \code{sample001_unstim}, \code{sample001_stim1}, etc.
+}
 
-  Expression values can be accessed with `flowCore::exprs()` and per-cell truth
-  labels from `labelsList[[sample_condition_name]]`.
+Expression values can be accessed with \code{flowCore::exprs()} and per-cell truth
+labels from \code{labelsList[[sample_condition_name]]}.
 }
 \description{
 Simulate unstimulated/stimulated cytometry experiments across biological
 samples. The simulator follows the hierarchy
-`simCytExperiment()` -> `simCytSample()` -> `simCytCondition()` ->
-`simCytCluster()`.
+\code{simCytExperiment()} -> \code{simCytSample()} -> \code{simCytCondition()} ->
+\code{simCytCluster()}.
 
 The current phenotype contract is explicit: populations are all binary marker
-combinations, so `nCluster` must equal `2^nMarker`.
+combinations, so \code{nCluster} must equal \code{2^nMarker}.
 }
 \examples{
 scenario <- simCytScenarioBivariate()

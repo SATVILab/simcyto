@@ -10,7 +10,7 @@ simCytTransformGaussian(sd = 1)
 \item{sd}{Numeric scalar. Standard deviation of zero-mean Gaussian noise.}
 }
 \value{
-Function that adds Gaussian noise to `x`.
+Function that adds Gaussian noise to \code{x}.
 }
 \description{
 Gaussian noise transformation

@@ -2,7 +2,7 @@
 % Please edit documentation in R/scenarios.R
 \name{simCytBuildScenario}
 \alias{simCytBuildScenario}
-\title{Build a simulation scenario for `nMarker` markers}
+\title{Build a simulation scenario for \code{nMarker} markers}
 \usage{
 simCytBuildScenario(
   nMarker,
@@ -13,7 +13,7 @@ simCytBuildScenario(
 )
 }
 \arguments{
-\item{nMarker}{Integer scalar. Number of markers. Must be `>= 1`.}
+\item{nMarker}{Integer scalar. Number of markers. Must be \verb{>= 1}.}
 
 \item{lowMean}{Numeric scalar. Mean expression assigned to marker-negative
 populations.}
@@ -21,24 +21,24 @@ populations.}
 \item{highMean}{Numeric scalar. Mean expression assigned to marker-positive
 populations.}
 
-\item{probUns}{Optional numeric vector of length `2^nMarker`. Baseline
-unstimulated probabilities; must sum to 1. If `NULL`, a uniform distribution
+\item{probUns}{Optional numeric vector of length \code{2^nMarker}. Baseline
+unstimulated probabilities; must sum to 1. If \code{NULL}, a uniform distribution
 is used.}
 
 \item{probResponse}{Optional list (or numeric vector) defining stimulated
-probability shifts. Each response vector must have length `2^nMarker` and is
-added to `probUns` inside [simCytExperiment()]. You are responsible for
+probability shifts. Each response vector must have length \code{2^nMarker} and is
+added to \code{probUns} inside \code{\link[=simCytExperiment]{simCytExperiment()}}. You are responsible for
 ensuring each resulting stimulated probability vector is valid (non-negative
 and summing to 1).}
 }
 \value{
-A list with elements `nMarker`, `nCluster`, `meanExprMat`,
-  `clusterLabelVec`, `probVecUns`, and `probResponseVecByStimCondition`.
+A list with elements \code{nMarker}, \code{nCluster}, \code{meanExprMat},
+\code{clusterLabelVec}, \code{probVecUns}, and \code{probResponseVecByStimCondition}.
 }
 \description{
 Construct the phenotype grid and probability objects consumed by
-[simCytExperiment()]. The scenario contract is currently tied to binary marker
-combinations, so the number of populations is fixed at `nCluster = 2^nMarker`.
+\code{\link[=simCytExperiment]{simCytExperiment()}}. The scenario contract is currently tied to binary marker
+combinations, so the number of populations is fixed at \code{nCluster = 2^nMarker}.
 }
 \examples{
 scenario <- simCytBuildScenario(

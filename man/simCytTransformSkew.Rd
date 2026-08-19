@@ -11,13 +11,13 @@ simCytTransformSkew(shape = 0, location = 0, scale = 1)
 
 \item{location}{Numeric scalar. Location parameter.}
 
-\item{scale}{Numeric scalar. Scale parameter (`> 0`).}
+\item{scale}{Numeric scalar. Scale parameter (\verb{> 0}).}
 }
 \value{
-Function that adds skew-normal noise to `x`.
+Function that adds skew-normal noise to \code{x}.
 }
 \description{
-Adds skew-normal distributed noise to `x`.
+Adds skew-normal distributed noise to \code{x}.
 }
 \examples{
 f <- simCytTransformSkew(shape = 2, location = 0, scale = 1)

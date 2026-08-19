@@ -7,7 +7,7 @@
 simCytTransformIdentity()
 }
 \value{
-Function that returns `x` unchanged.
+Function that returns \code{x} unchanged.
 }
 \description{
 Identity transformation

@@ -2,7 +2,7 @@
 % Please edit documentation in R/scenarios.R
 \name{simCytScenarioUnivariate}
 \alias{simCytScenarioUnivariate}
-\title{Construct a univariate scenario (`nMarker = 1`)}
+\title{Construct a univariate scenario (\code{nMarker = 1})}
 \usage{
 simCytScenarioUnivariate(
   lowMean = 0,
@@ -18,22 +18,22 @@ populations.}
 \item{highMean}{Numeric scalar. Mean expression assigned to marker-positive
 populations.}
 
-\item{probUns}{Optional numeric vector of length `2^nMarker`. Baseline
-unstimulated probabilities; must sum to 1. If `NULL`, a uniform distribution
+\item{probUns}{Optional numeric vector of length \code{2^nMarker}. Baseline
+unstimulated probabilities; must sum to 1. If \code{NULL}, a uniform distribution
 is used.}
 
 \item{probResponse}{Optional list (or numeric vector) defining stimulated
-probability shifts. Each response vector must have length `2^nMarker` and is
-added to `probUns` inside [simCytExperiment()]. You are responsible for
+probability shifts. Each response vector must have length \code{2^nMarker} and is
+added to \code{probUns} inside \code{\link[=simCytExperiment]{simCytExperiment()}}. You are responsible for
 ensuring each resulting stimulated probability vector is valid (non-negative
 and summing to 1).}
 }
 \value{
-A scenario list from [simCytBuildScenario()] with `nMarker = 1`.
+A scenario list from \code{\link[=simCytBuildScenario]{simCytBuildScenario()}} with \code{nMarker = 1}.
 }
 \description{
-Convenience wrapper around [simCytBuildScenario()] for two populations:
-`F1-` and `F1+`.
+Convenience wrapper around \code{\link[=simCytBuildScenario]{simCytBuildScenario()}} for two populations:
+\verb{F1-} and \verb{F1+}.
 }
 \examples{
 scenario <- simCytScenarioUnivariate()
