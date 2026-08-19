@@ -194,6 +194,14 @@
   }
 
   transName <- attr(transformationFunc, "sim_transformation")
+
+  if (isTRUE(.simCytUsesUpperRatioCorrection(transformationFunc))) {
+    minSim <- min(simDataMat, na.rm = TRUE)
+    if (is.finite(minSim) && minSim < 0) {
+      simDataMat <- simDataMat - minSim
+    }
+  }
+
   if (isTRUE(transName %in% c("gamma", "skew"))) {
     simDataMat <- pmax(simDataMat, 0)
   }

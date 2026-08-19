@@ -150,21 +150,23 @@ simCytSample <- function(
     paramAnnotated@data$desc <- as.character(paramAnnotated@data$desc)
     names(paramAnnotated@data$desc) <- NULL
 
-    ff <- flowCore::flowFrame(
-      exprs = outListCondition$conditionMatrix,
-      parameters = paramAnnotated
-    )
-    ff@parameters@data$name <- as.character(paste0("F", seq_len(nMarker)))
-    names(ff@parameters@data$name) <- NULL
-    ff@parameters@data$desc <- as.character(paste0("MarkerF", seq_len(nMarker)))
-    names(ff@parameters@data$desc) <- NULL
-    exprMatrix <- flowCore::exprs(ff)
-    colnames(exprMatrix) <- paste0("F", seq_len(nMarker))
-    flowCore::exprs(ff) <- exprMatrix
-    exprRange <- apply(flowCore::exprs(ff), 2, max)
-    ff@parameters@data$range <- exprRange
-    ff@parameters@data$minRange <- apply(flowCore::exprs(ff), 2, min)
-    ff@parameters@data$maxRange <- exprRange
+    exprMat <- outListCondition$conditionMatrix
+    colnames(exprMat) <- paste0("F", seq_len(nMarker))
+ff <- flowCore::flowFrame(
+  exprs = exprMat,
+  parameters = paramAnnotated
+)
+flowCore::exprs(ff) <- exprMat
+pDataFF <- Biobase::pData(flowCore::parameters(ff))
+rownames(pDataFF) <- paste0("$P", seq_len(nMarker))
+pDataFF$name <- paste0("F", seq_len(nMarker))
+pDataFF$desc <- paste0("MarkerF", seq_len(nMarker))
+colMaxima <- apply(exprMat, 2, max)
+colMinima <- apply(exprMat, 2, min)
+pDataFF$range <- colMaxima
+pDataFF$minRange <- colMinima
+pDataFF$maxRange <- colMaxima
+Biobase::pData(flowCore::parameters(ff)) <- pDataFF
     flowList[[i]] <<- ff
     labelsList[[i]] <<- outListCondition$conditionLabels
     NULL
