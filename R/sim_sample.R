@@ -74,22 +74,22 @@ simCytSample <- function(
     nCellByCondition
   }
 
-  probVecByCondition <- vector("list", nCondition)
-  probVecByCondition[[1L]] <- probVecUns
+probVecByCondition <- vector("list", nCondition)
+probVecByCondition[[1L]] <- probVecUns
 
-  if (!is.null(probResponseVecByStimCondition)) {
-    for (stimInd in seq_len(nCondition - 1L)) {
-      probVecByCondition[[stimInd + 1L]] <- probVecUns + probResponseVecByStimCondition[[stimInd]]
-    }
-  } else {
-    for (stimInd in seq_len(nCondition - 1L)) {
-      probVecByCondition[[stimInd + 1L]] <- probVecUns
-    }
+if (!is.null(probResponseVecByStimCondition)) {
+  for (stimInd in seq_len(nCondition - 1L)) {
+    probVecByCondition[[stimInd + 1L]] <- probVecUns + probResponseVecByStimCondition[[stimInd]]
   }
+} else {
+  for (stimInd in seq_len(nCondition - 1L)) {
+    probVecByCondition[[stimInd + 1L]] <- probVecUns
+  }
+}
 
-  conditionLabelVec <- c("unstim", paste0("stim", seq_len(nCondition - 1L)))
-  flowList <- stats::setNames(lapply(seq_len(nCondition), function(i) NULL), conditionLabelVec)
-  labelsList <- stats::setNames(lapply(seq_len(nCondition), function(i) NULL), conditionLabelVec)
+conditionLabelVec <- c("unstim", paste0("stim", seq_len(nCondition - 1L)))
+flowList <- stats::setNames(lapply(seq_len(nCondition), function(i) NULL), conditionLabelVec)
+labelsList <- stats::setNames(lapply(seq_len(nCondition), function(i) NULL), conditionLabelVec)
 
   lapply(seq_len(nCondition), function(i) {
     meanExprMat <- if (conditionPerturbationSd == 0L) {
@@ -132,23 +132,23 @@ simCytSample <- function(
     )
     rownames(paramMeta) <- paste0("$P", seq_len(nMarker))
 
-    paramAnnotated <- Biobase::AnnotatedDataFrame(
-      data = paramMeta,
-      varMetadata = data.frame(
-        labelDescription = c(
-          "Name of instrument channel",
-          "Actual marker description",
-          "Range of values",
-          "Minimum binary value",
-          "Maximum binary value"
-        ),
-        row.names = c("name", "desc", "range", "minRange", "maxRange")
-      )
-    )
-    paramAnnotated@data$name <- as.character(paramAnnotated@data$name)
-    names(paramAnnotated@data$name) <- NULL
-    paramAnnotated@data$desc <- as.character(paramAnnotated@data$desc)
-    names(paramAnnotated@data$desc) <- NULL
+paramAnnotated <- Biobase::AnnotatedDataFrame(
+  data = paramMeta,
+  varMetadata = data.frame(
+    labelDescription = c(
+      "Name of instrument channel",
+      "Actual marker description",
+      "Range of values",
+      "Minimum binary value",
+      "Maximum binary value"
+    ),
+    row.names = c("name", "desc", "range", "minRange", "maxRange")
+  )
+)
+paramAnnotated@data$name <- as.character(paramAnnotated@data$name)
+names(paramAnnotated@data$name) <- NULL
+paramAnnotated@data$desc <- as.character(paramAnnotated@data$desc)
+names(paramAnnotated@data$desc) <- NULL
 
     exprMat <- outListCondition$conditionMatrix
     colnames(exprMat) <- paste0("F", seq_len(nMarker))
