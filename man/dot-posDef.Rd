@@ -10,7 +10,7 @@
 This helper implements the standard random positive-definite matrix
 construction described in the R-help / R programming community literature and
 credited upstream to Ravi Varadhan. It is retained as a small numerical
-utility inside `simcyto` and is documented in `inst/COPYRIGHTS` as part of
+utility inside \code{simcyto} and is documented in \code{inst/COPYRIGHTS} as part of
 the package's provenance trail.
 }
 \keyword{internal}

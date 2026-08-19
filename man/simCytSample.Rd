@@ -47,7 +47,7 @@ gamma transformation).}
 (length nCluster, sums to 1).}
 
 \item{probExact}{Logical. If TRUE, use exact probabilities for cluster assignment; if FALSE, sample from a multinomial distribution.
-Default is `FALSE`.}
+Default is \code{FALSE}.}
 
 \item{probResponseVecByStimCondition}{List. Probability response vectors for each stimulated
 condition (length nCondition - 1, each of length nCluster).}
@@ -65,7 +65,7 @@ within each condition.}
 \item{meanExprMatReference}{Numeric matrix. Reference cluster mean matrix.}
 }
 \value{
-A list with `flowFrameList` and `conditionLabelsList`.
+A list with \code{flowFrameList} and \code{conditionLabelsList}.
 }
 \description{
 Simulate a set of stimulation conditions (e.g., stimulated and unstimulated) for

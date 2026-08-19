@@ -12,7 +12,7 @@ simCytTransformGamma(shape = 1, scale = 1)
 \item{scale}{Numeric scalar. Gamma scale parameter.}
 }
 \value{
-Function that adds gamma-distributed noise to `x`.
+Function that adds gamma-distributed noise to \code{x}.
 }
 \description{
 Gamma noise transformation

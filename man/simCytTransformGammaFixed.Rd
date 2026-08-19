@@ -7,12 +7,12 @@
 simCytTransformGammaFixed(mean = 1, sd = 1)
 }
 \arguments{
-\item{mean}{Numeric scalar. Mean of gamma noise (`> 0`).}
+\item{mean}{Numeric scalar. Mean of gamma noise (\verb{> 0}).}
 
-\item{sd}{Numeric scalar. Standard deviation of gamma noise (`> 0`).}
+\item{sd}{Numeric scalar. Standard deviation of gamma noise (\verb{> 0}).}
 }
 \value{
-Function that adds gamma-distributed noise to `x`.
+Function that adds gamma-distributed noise to \code{x}.
 }
 \description{
 Reparameterises Gamma distribution using mean and standard deviation.

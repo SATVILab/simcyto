@@ -154,3 +154,131 @@ simCytScenarioBivariate <- function(
     probResponse = probResponse
   )
 }
+
+#' Build a baseline probability vector for a binary marker-combination scenario
+#'
+#' Construct a probability vector of length `2^nMarker` from per-population
+#' weights. This is a convenience helper for scenarios with many markers where
+#' manually writing a vector of length `2^nMarker` is error-prone.
+#'
+#' The function accepts an optional named numeric vector `weights` that maps
+#' cluster labels (as returned by [simCytBuildScenario()]) to unnormalised
+#' weights. Any cluster not named in `weights` receives weight `defaultWeight`.
+#' The resulting vector is normalised to sum to 1.
+#'
+#' @param nMarker Integer scalar. Number of binary markers. Determines the
+#'   vector length as `2^nMarker`.
+#' @param weights Optional named numeric vector mapping cluster label strings to
+#'   unnormalised weights. Cluster labels use the convention `"F1-F2+F3-..."`.
+#'   If `NULL`, all populations receive `defaultWeight`.
+#' @param defaultWeight Numeric scalar. Weight assigned to populations not
+#'   present in `weights`. Default is `1`.
+#'
+#' @return A normalised numeric probability vector of length `2^nMarker`.
+#'
+#' @examples
+#' # Uniform baseline for 3 markers (8 populations)
+#' p <- simCytBuildProbVec(nMarker = 3)
+#' length(p) == 8
+#' sum(p)
+#'
+#' # Put most probability on the all-negative population
+#' p2 <- simCytBuildProbVec(
+#'   nMarker = 3,
+#'   weights = c("F1-F2-F3-" = 10),
+#'   defaultWeight = 1
+#' )
+#' p2["F1-F2-F3-"] > 0.5
+#'
+#' @export
+simCytBuildProbVec <- function(nMarker, weights = NULL, defaultWeight = 1) {
+  stopifnot(is.numeric(nMarker), length(nMarker) == 1L, nMarker >= 1L)
+  nMarker <- as.integer(nMarker)
+  nCluster <- 2L^nMarker
+
+  sc <- simCytBuildScenario(nMarker = nMarker)
+  labels <- sc$clusterLabelVec
+
+  w <- rep(defaultWeight, nCluster)
+  names(w) <- labels
+
+  if (!is.null(weights)) {
+    stopifnot(is.numeric(weights), !is.null(names(weights)))
+    unknown <- setdiff(names(weights), labels)
+    if (length(unknown) > 0L) {
+      stop(
+        "Unknown cluster labels in `weights`: ",
+        paste(unknown, collapse = ", ")
+      )
+    }
+    w[names(weights)] <- weights
+  }
+
+  stopifnot(all(w >= 0))
+  total <- sum(w)
+  stopifnot(total > 0)
+  w / total
+}
+
+#' Build a response-shift vector for a binary marker-combination scenario
+#'
+#' Construct a response-shift vector of length `2^nMarker` for use as an
+#' element of `probResponseVecByStimCondition` in [simCytExperiment()]. This
+#' is a convenience helper for scenarios where only a few populations change
+#' in probability under stimulation.
+#'
+#' Each named entry in `shifts` specifies the additive change in probability
+#' for the corresponding cluster. Unspecified clusters receive `0`. The shifts
+#' must sum to zero so that the resulting stimulated probability vector remains
+#' a valid probability distribution (the caller is responsible for ensuring that
+#' adding the shift vector to `probVecUns` yields a non-negative vector summing
+#' to 1).
+#'
+#' @param nMarker Integer scalar. Number of binary markers.
+#' @param shifts Named numeric vector mapping cluster label strings to additive
+#'   probability shifts. Cluster labels use the convention `"F1-F2+F3-..."`.
+#'   Must sum to zero.
+#'
+#' @return A numeric vector of length `2^nMarker` whose named entries give the
+#'   additive probability shifts for each cluster.
+#'
+#' @examples
+#' # Shift 10 % probability from the all-negative to the all-positive population
+#' nMarker <- 3
+#' sc <- simCytBuildScenario(nMarker = nMarker)
+#' neg <- sc$clusterLabelVec[1] # "F1-F2-F3-"
+#' pos <- sc$clusterLabelVec[8] # "F1+F2+F3+"
+#' delta <- simCytBuildResponseVec(
+#'   nMarker = nMarker,
+#'   shifts = setNames(c(-0.1, 0.1), c(neg, pos))
+#' )
+#' sum(delta) # 0
+#'
+#' @export
+simCytBuildResponseVec <- function(nMarker, shifts) {
+  stopifnot(is.numeric(nMarker), length(nMarker) == 1L, nMarker >= 1L)
+  stopifnot(is.numeric(shifts), !is.null(names(shifts)))
+  nMarker <- as.integer(nMarker)
+  nCluster <- 2L^nMarker
+
+  sc <- simCytBuildScenario(nMarker = nMarker)
+  labels <- sc$clusterLabelVec
+
+  unknown <- setdiff(names(shifts), labels)
+  if (length(unknown) > 0L) {
+    stop(
+      "Unknown cluster labels in `shifts`: ",
+      paste(unknown, collapse = ", ")
+    )
+  }
+
+  delta <- rep(0, nCluster)
+  names(delta) <- labels
+  delta[names(shifts)] <- shifts
+
+  if (abs(sum(delta)) > 1e-9) {
+    stop("`shifts` must sum to zero so that stimulated probabilities remain valid.")
+  }
+
+  delta
+}
