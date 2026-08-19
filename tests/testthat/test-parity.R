@@ -197,9 +197,9 @@ test_that("mixture modes (gaussianOnly, tOnly, tPlusGauss) produce numeric parit
 test_that("transformations and ratio correction exhibit reproducible behaviour", {
   sc <- simCytScenarioBivariate()
 
-  trans_gamma <- simCytTransformGamma(shape = 2, scale = 1.5)
-  trans_skew <- simCytTransformSkew(shape = 2, location = 0.5, scale = 1)
-  trans_gauss <- simCytTransformGaussian(sd = 0.5)
+  trans_gamma <- simCytTransformGamma()
+  trans_skew <- simCytTransformSkew()
+  trans_gauss <- simCytTransformGaussian()
 
   expect_true(simcyto:::.simCytUsesUpperRatioCorrection(trans_gamma))
   expect_true(simcyto:::.simCytUsesUpperRatioCorrection(trans_skew))

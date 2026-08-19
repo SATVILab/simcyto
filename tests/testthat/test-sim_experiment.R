@@ -65,7 +65,7 @@ test_that("simCytExperiment supports perturbations and ratio correction", {
   nCell <- 100
 
   # Gamma trans function attribute for ratio correction
-  gammaTrans <- function(x) x^0.5
+  gammaTrans <- function(x) sqrt(abs(x))
   attr(gammaTrans, "sim_transformation") <- "gamma"
 
   meanMat <- matrix(c(1, 10), nrow = 2, ncol = 1)
@@ -143,22 +143,25 @@ test_that("fixed-seed regression test guarantees exact cell allocation parity an
 })
 
 test_that("fixed-seed regression test validates mixture types and ratio corrections reproducibility", {
-  sc <- simCytScenarioBivariate()
-  gamma_trans <- simCytTransformGamma(shape = 2, scale = 1)
+  gamma_trans <- simCytTransformGamma()
+  mean_mat <- matrix(c(1, 2), nrow = 2, ncol = 1)
+  labels <- c("F1-", "F1+")
+  prob_uns <- c(0.5, 0.5)
+  prob_resp <- list(c(-0.1, 0.1))
 
   set.seed(999)
   res_gamma1 <- simCytExperiment(
     nSample = 1,
-    nMarker = sc$nMarker,
+    nMarker = 1,
     nCondition = 2,
-    nCluster = sc$nCluster,
+    nCluster = 2,
     nCellByCondition = 80,
     transformationFunc = gamma_trans,
     mixtureType = "tOnly",
-    meanExprMat = sc$meanExprMat,
-    clusterLabelVec = sc$clusterLabelVec,
-    probVecUns = sc$probVecUns,
-    probResponseVecByStimCondition = sc$probResponseVecByStimCondition,
+    meanExprMat = mean_mat,
+    clusterLabelVec = labels,
+    probVecUns = prob_uns,
+    probResponseVecByStimCondition = prob_resp,
     samplePerturbationSd = 0.05,
     conditionPerturbationSd = 0.05,
     clusterPerturbationSd = 0.05
@@ -167,16 +170,16 @@ test_that("fixed-seed regression test validates mixture types and ratio correcti
   set.seed(999)
   res_gamma2 <- simCytExperiment(
     nSample = 1,
-    nMarker = sc$nMarker,
+    nMarker = 1,
     nCondition = 2,
-    nCluster = sc$nCluster,
+    nCluster = 2,
     nCellByCondition = 80,
     transformationFunc = gamma_trans,
     mixtureType = "tOnly",
-    meanExprMat = sc$meanExprMat,
-    clusterLabelVec = sc$clusterLabelVec,
-    probVecUns = sc$probVecUns,
-    probResponseVecByStimCondition = sc$probResponseVecByStimCondition,
+    meanExprMat = mean_mat,
+    clusterLabelVec = labels,
+    probVecUns = prob_uns,
+    probResponseVecByStimCondition = prob_resp,
     samplePerturbationSd = 0.05,
     conditionPerturbationSd = 0.05,
     clusterPerturbationSd = 0.05

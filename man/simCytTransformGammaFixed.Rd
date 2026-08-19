@@ -2,24 +2,21 @@
 % Please edit documentation in R/transformations.R
 \name{simCytTransformGammaFixed}
 \alias{simCytTransformGammaFixed}
-\title{Gamma noise transformation with fixed mean and standard deviation}
+\title{StimGate gamma transformation with fixed mean and spread}
 \usage{
-simCytTransformGammaFixed(mean = 1, sd = 1)
-}
-\arguments{
-\item{mean}{Numeric scalar. Mean of gamma noise (\verb{> 0}).}
-
-\item{sd}{Numeric scalar. Standard deviation of gamma noise (\verb{> 0}).}
+simCytTransformGammaFixed()
 }
 \value{
-Function that adds gamma-distributed noise to \code{x}.
+Function that applies the fixed-mean/spread StimGate gamma
+transformation.
 }
 \description{
-Reparameterises Gamma distribution using mean and standard deviation.
+Reproduces the current StimGate \code{calc_gamma_fixed_mean_and_spread()} helper:
+apply the StimGate gamma transformation, then linearly rescale the result so
+the output has the same mean and standard deviation as the input vector.
 }
 \examples{
-f <- simCytTransformGammaFixed(mean = 2, sd = 1)
-set.seed(1)
-f(c(0, 0, 0))
+f <- simCytTransformGammaFixed()
+f(c(1, 2, 3))
 
 }

@@ -43,8 +43,9 @@ If \code{probExact = TRUE}, each condition allocates exactly this number of cell
 by rounded cluster counts. If \code{probExact = FALSE}, allocations are sampled
 from a multinomial draw.}
 
-\item{transformationFunc}{Function. Transformation applied marker-wise to
-simulated expression values.}
+\item{transformationFunc}{Function. Post-simulation transformation applied
+marker-wise to simulated expression values. This is separate from
+\code{mixtureType}, which controls the raw simulation distribution.}
 
 \item{mixtureType}{Character. Mixture distribution used for simulation.
 Supported values are "gaussianOnly", "tOnly", and "tPlusGauss".}

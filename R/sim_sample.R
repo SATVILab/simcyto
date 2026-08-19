@@ -8,8 +8,9 @@
 #' @param nCluster Integer. Number of clusters (must be a power of 2 between 2 and 1024).
 #' @param nCellByCondition Integer or numeric vector. Number of cells per condition. If a single
 #'   value, it is recycled for all conditions.
-#' @param transformationFunc Function. Transformation to apply to simulated data (e.g., identity or
-#'   gamma transformation).
+#' @param transformationFunc Function. Post-simulation transformation to apply
+#'   to simulated data (for example identity or a StimGate-style gamma
+#'   transformation).
 #' @param mixtureType Character. Type of mixture distribution: "gaussianOnly", "tOnly", or
 #'   "tPlusGauss".
 #' @param meanExprMat Numeric matrix. Cluster mean vectors (nCluster x nMarker).

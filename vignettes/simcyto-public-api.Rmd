@@ -53,13 +53,26 @@ Current constraint: the public API supports binary marker combinations, so
 
 ## 2) Choose a transformation
 
-Transformations are marker-wise functions. For example:
+Transformations are marker-wise post-simulation functions. They are distinct
+from `mixtureType`, which controls how the raw cluster values are generated.
+For StimGate-compatible workflows, the public transformation constructors match
+the current StimGate helper semantics:
+
+- `simCytTransformGaussian()`: no-op / identity transformation
+- `simCytTransformGamma()`: `gamma(1 + abs(x / 4))`
+- `simCytTransformGammaFixed()`: StimGate gamma followed by rescaling to the
+  original mean and SD
+- `simCytTransformSkew()`: current StimGate `sinh(...)` skew transform with
+  stochastic gamma divisor
+
+For example:
 
 ```{r}
 identity_tf <- simCytTransformIdentity()
-gamma_tf <- simCytTransformGammaFixed(mean = 1, sd = 0.5)
+gamma_tf <- simCytTransformGammaFixed()
 
 identity_tf(c(1, 2, 3))
+gamma_tf(c(1, 2, 3))
 ```
 
 ## 3) Simulate an unstimulated/stimulated experiment

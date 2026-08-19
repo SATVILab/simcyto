@@ -4,7 +4,8 @@
 #'
 #' @param nMarker Integer. Number of markers/dimensions.
 #' @param nCell Integer. Total number of cells to simulate.
-#' @param transformationFunc Function. Transformation to apply to simulated data.
+#' @param transformationFunc Function. Post-simulation transformation to apply
+#'   to simulated data.
 #' @param mixtureType Character. Type of mixture distribution.
 #' @param meanExprMat Numeric matrix. Cluster mean vectors.
 #' @param clusterLabelVec Character vector. Cluster labels.

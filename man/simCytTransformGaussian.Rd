@@ -2,21 +2,19 @@
 % Please edit documentation in R/transformations.R
 \name{simCytTransformGaussian}
 \alias{simCytTransformGaussian}
-\title{Gaussian noise transformation}
+\title{Gaussian/identity transformation}
 \usage{
-simCytTransformGaussian(sd = 1)
-}
-\arguments{
-\item{sd}{Numeric scalar. Standard deviation of zero-mean Gaussian noise.}
+simCytTransformGaussian()
 }
 \value{
-Function that adds Gaussian noise to \code{x}.
+Function that returns \code{x} unchanged.
 }
 \description{
-Gaussian noise transformation
+Reproduces the current StimGate \code{"gaussian"} post-simulation setting, which
+applies no additional transformation.
 }
 \examples{
-f <- simCytTransformGaussian(sd = 0)
+f <- simCytTransformGaussian()
 f(c(2, 4, 6))
 
 }

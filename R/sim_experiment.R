@@ -21,8 +21,9 @@
 #'   If `probExact = TRUE`, each condition allocates exactly this number of cells
 #'   by rounded cluster counts. If `probExact = FALSE`, allocations are sampled
 #'   from a multinomial draw.
-#' @param transformationFunc Function. Transformation applied marker-wise to
-#'   simulated expression values.
+#' @param transformationFunc Function. Post-simulation transformation applied
+#'   marker-wise to simulated expression values. This is separate from
+#'   `mixtureType`, which controls the raw simulation distribution.
 #' @param mixtureType Character. Mixture distribution used for simulation.
 #'   Supported values are "gaussianOnly", "tOnly", and "tPlusGauss".
 #' @param meanExprMat Numeric matrix. Baseline cluster means with dimensions
