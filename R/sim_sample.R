@@ -149,15 +149,17 @@ simCytSample <- function(
       exprs = exprMat,
       parameters = paramAnnotated
     )
+    flowCore::exprs(ff) <- exprMat
     pDataFF <- Biobase::pData(flowCore::parameters(ff))
     rownames(pDataFF) <- paste0("$P", seq_len(nMarker))
     pDataFF$name <- paste0("F", seq_len(nMarker))
     pDataFF$desc <- paste0("MarkerF", seq_len(nMarker))
-    pDataFF$range <- stats::setNames(apply(exprMat, 2, max), paste0("F", seq_len(nMarker)))
-    pDataFF$minRange <- stats::setNames(apply(exprMat, 2, min), paste0("F", seq_len(nMarker)))
-    pDataFF$maxRange <- stats::setNames(apply(exprMat, 2, max), paste0("F", seq_len(nMarker)))
+    colMaxima <- apply(exprMat, 2, max)
+    colMinima <- apply(exprMat, 2, min)
+    pDataFF$range <- colMaxima
+    pDataFF$minRange <- colMinima
+    pDataFF$maxRange <- colMaxima
     Biobase::pData(flowCore::parameters(ff)) <- pDataFF
-    colnames(flowCore::exprs(ff)) <- paste0("F", seq_len(nMarker))
     flowList[[i]] <<- ff
     labelsList[[i]] <<- outListCondition$conditionLabels
     NULL
