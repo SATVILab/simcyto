@@ -5,7 +5,9 @@ This package contains reusable simulation machinery that was derived from
 simulation code used in the FAUST benchmarking manuscript workflow. The upstream
 source was the file `functionsForBenchmarking-Pheno.R` in the `RGLab/
 faust_manuscript_analyses` repository, as used by the FAUST benchmarking
-framework.
+framework. The repository and file path are recorded here; a release-specific
+upstream commit or ref should be frozen when the package is prepared for a
+release tag.
 
 The adapted code in `simcyto` is restricted to the reusable simulation engine
 and intentionally excludes the downstream statistical-evaluation, mixed-model,

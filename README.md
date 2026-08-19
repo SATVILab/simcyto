@@ -13,7 +13,7 @@ pak::pak("SATVILab/simcyto")
 
 ## Provenance and Licensing
 
-The simulation machinery in `simcyto` derives from the FAUST benchmarking workflow and the corresponding `functionsForBenchmarking-Pheno.R` source used in the `RGLab/faust_manuscript_analyses` repository. This provenance is recorded in `inst/COPYRIGHTS` and should be treated as the package's authoritative redistribution record.
+The simulation machinery in `simcyto` derives from the FAUST benchmarking workflow and the corresponding `functionsForBenchmarking-Pheno.R` source used in the `RGLab/faust_manuscript_analyses` repository. This provenance is recorded in `inst/COPYRIGHTS` and should be treated as the package's authoritative redistribution record; the release-tagged upstream commit/ref should be pinned once a release candidate is prepared.
 
 The positive-definite covariance helper used in the cluster simulation core is a nested third-party provenance item: the construction is the standard R-help / R programming community algorithm credited to Ravi Varadhan, and it is retained here as a small numerical utility that is not itself a separate software package.
 
