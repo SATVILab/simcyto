@@ -10,7 +10,9 @@
 #' @param nMarker Integer. Number of markers/dimensions.
 #' @param nCondition Integer. Number of conditions per sample. The first
 #'   condition is unstimulated and the rest are stimulated.
-#' @param nCluster Integer. Number of clusters. Must equal `2^nMarker`.
+#' @param nCluster Integer. Number of phenotype clusters. The current simulation
+#'   contract explicitly requires `nCluster == 2^nMarker`; this is not a latent
+#'   generalisation of the model.
 #' @param nCellByCondition Numeric or integer vector. Number of cells per
 #'   condition. If length is 1, the value is recycled across all conditions.
 #' @param transformationFunc Function. Transformation applied marker-wise to
@@ -35,6 +37,12 @@
 #'   perturbations applied during cell-level simulation. Default is 0.
 #' @param covEvMin Numeric. Minimum eigenvalue for cluster covariance matrices. Default is 1.
 #' @param covEvMax Numeric. Maximum eigenvalue for cluster covariance matrices. Default is 2.
+#' @param scenario Optional scenario list created by a scenario builder such as
+#'   `simCytScenarioBivariate()` or `simCytScenarioUnivariate()`. When supplied,
+#'   any missing experiment values are filled from the scenario object while
+#'   preserving explicit arguments as the authoritative overrides. The scenario
+#'   contract is intentionally limited to the phenotype grid and probability
+#'   fields consumed by the experiment layer.
 #'
 #' @return A list with two elements:
 #'   - `flowFrameList`: A named list of `flowCore::flowFrame` objects.
@@ -43,24 +51,71 @@
 #'
 #' @export
 simCytExperiment <- function(
-  nSample,
-  nMarker,
-  nCondition,
-  nCluster,
-  nCellByCondition,
-  transformationFunc,
+  nSample = NULL,
+  nMarker = NULL,
+  nCondition = NULL,
+  nCluster = NULL,
+  nCellByCondition = NULL,
+  transformationFunc = NULL,
   mixtureType = "gaussianOnly",
   meanExprMat = NA,
   clusterLabelVec = NA,
-  probVecUns,
+  probVecUns = NULL,
   probExact = FALSE,
   probResponseVecByStimCondition = NULL,
   samplePerturbationSd = 0,
   conditionPerturbationSd = 0,
   clusterPerturbationSd = 0,
   covEvMin = 1,
-  covEvMax = 2
+  covEvMax = 2,
+  scenario = NULL
 ) {
+  if (!is.null(scenario)) {
+    if (!is.list(scenario)) {
+      stop("`scenario` must be a list created by a scenario builder.")
+    }
+    scenarioRequired <- c(
+      "nMarker",
+      "nCluster",
+      "meanExprMat",
+      "clusterLabelVec",
+      "probVecUns"
+    )
+    missingScenarioFields <- setdiff(scenarioRequired, names(scenario))
+    if (length(missingScenarioFields) > 0L) {
+      stop(
+        "`scenario` is missing required fields: ",
+        paste(missingScenarioFields, collapse = ", ")
+      )
+    }
+
+    if (is.null(nMarker)) {
+      nMarker <- scenario$nMarker
+    }
+    if (is.null(nCluster)) {
+      nCluster <- scenario$nCluster
+    }
+    if (is.null(probVecUns)) {
+      probVecUns <- scenario$probVecUns
+    }
+    if (is.null(probResponseVecByStimCondition)) {
+      probResponseVecByStimCondition <- scenario$probResponseVecByStimCondition
+    }
+    if (is.null(meanExprMat) || (is.atomic(meanExprMat) && length(meanExprMat) == 1L && is.na(meanExprMat))) {
+      meanExprMat <- scenario$meanExprMat
+    }
+    if (is.null(clusterLabelVec) || (is.atomic(clusterLabelVec) && length(clusterLabelVec) == 1L && is.na(clusterLabelVec))) {
+      clusterLabelVec <- scenario$clusterLabelVec
+    }
+  }
+
+  if (is.null(nSample) || is.null(nMarker) || is.null(nCondition) || is.null(nCluster) ||
+      is.null(nCellByCondition) || is.null(transformationFunc) || is.null(probVecUns)) {
+    stop(
+      "Missing required experiment inputs. Supply either explicit arguments or a valid `scenario` object."
+    )
+  }
+
   # Coerce inputs
   stopifnot(is.numeric(nSample))
   nSample <- as.integer(nSample)
