@@ -7,15 +7,21 @@
 simCytTransformSkew(shape = 0, location = 0, scale = 1)
 }
 \arguments{
-\item{shape}{Numeric. Shape (skewness) parameter alpha. Default is 0.}
+\item{shape}{Numeric scalar. Shape (skewness) parameter.}
 
-\item{location}{Numeric. Location parameter. Default is 0.}
+\item{location}{Numeric scalar. Location parameter.}
 
-\item{scale}{Numeric. Scale parameter (>0). Default is 1.}
+\item{scale}{Numeric scalar. Scale parameter (`> 0`).}
 }
 \value{
-A function that adds skew-normal noise to `x`, tagged with `sim_transformation = "skew"`.
+Function that adds skew-normal noise to `x`.
 }
 \description{
 Adds skew-normal distributed noise to `x`.
+}
+\examples{
+f <- simCytTransformSkew(shape = 2, location = 0, scale = 1)
+set.seed(1)
+f(c(1, 1, 1))
+
 }

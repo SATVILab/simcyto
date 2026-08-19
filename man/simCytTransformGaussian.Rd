@@ -7,11 +7,16 @@
 simCytTransformGaussian(sd = 1)
 }
 \arguments{
-\item{sd}{Numeric. Standard deviation of Gaussian noise. Default is 1.}
+\item{sd}{Numeric scalar. Standard deviation of zero-mean Gaussian noise.}
 }
 \value{
-A function that adds zero-mean Gaussian noise to `x`, tagged with `sim_transformation = "gaussian"`.
+Function that adds Gaussian noise to `x`.
 }
 \description{
 Gaussian noise transformation
+}
+\examples{
+f <- simCytTransformGaussian(sd = 0)
+f(c(2, 4, 6))
+
 }

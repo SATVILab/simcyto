@@ -10,15 +10,25 @@ simCytGetTransformation(
 )
 }
 \arguments{
-\item{type}{Character. One of "identity", "gaussian", "gamma", "gammaFixed", or "skew".}
+\item{type}{Character scalar. One of `"identity"`, `"gaussian"`, `"gamma"`,
+`"gammaFixed"`, or `"skew"`.}
 
-\item{...}{Additional arguments passed to the specific transformation constructor.}
+\item{...}{Additional arguments passed to the selected constructor.}
 }
 \value{
-A function that takes a numeric vector `x` and returns transformed values,
-  tagged with attribute `"sim_transformation"`.
+A function that takes a numeric vector `x` and returns transformed
+  values. The returned function carries a `"sim_transformation"` attribute used
+  by ratio-correction logic in gamma/skew pipelines.
 }
 \description{
-Factory function to create tagged transformation functions used in simcyto
-simulations.
+Factory for marker-wise transformations used by [simCytExperiment()].
+}
+\examples{
+f_id <- simCytGetTransformation("identity")
+f_id(c(1, 2, 3))
+
+f_gauss <- simCytGetTransformation("gaussian", sd = 0.1)
+set.seed(1)
+f_gauss(c(1, 2, 3))
+
 }

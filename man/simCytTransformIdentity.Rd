@@ -2,13 +2,18 @@
 % Please edit documentation in R/transformations.R
 \name{simCytTransformIdentity}
 \alias{simCytTransformIdentity}
-\title{Identity transformation for cytometry simulation}
+\title{Identity transformation}
 \usage{
 simCytTransformIdentity()
 }
 \value{
-A function returning `x` unchanged, tagged with `sim_transformation = "identity"`.
+Function that returns `x` unchanged.
 }
 \description{
-Identity transformation for cytometry simulation
+Identity transformation
+}
+\examples{
+f <- simCytTransformIdentity()
+f(c(-1, 0, 1))
+
 }

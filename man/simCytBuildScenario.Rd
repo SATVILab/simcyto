@@ -2,7 +2,7 @@
 % Please edit documentation in R/scenarios.R
 \name{simCytBuildScenario}
 \alias{simCytBuildScenario}
-\title{Build a simulation scenario for n markers}
+\title{Build a simulation scenario for `nMarker` markers}
 \usage{
 simCytBuildScenario(
   nMarker,
@@ -13,29 +13,42 @@ simCytBuildScenario(
 )
 }
 \arguments{
-\item{nMarker}{Integer. Number of markers. Must be >= 1.}
+\item{nMarker}{Integer scalar. Number of markers. Must be `>= 1`.}
 
-\item{lowMean}{Numeric. Baseline mean for negative marker expressions. Default is 0.}
+\item{lowMean}{Numeric scalar. Mean expression assigned to marker-negative
+populations.}
 
-\item{highMean}{Numeric. Baseline mean for positive marker expressions. Default is 5.}
+\item{highMean}{Numeric scalar. Mean expression assigned to marker-positive
+populations.}
 
-\item{probUns}{Numeric vector. Baseline cluster probabilities for the unstimulated condition
-(length 2^nMarker, summing to 1). If NULL, uniform probabilities are assigned.}
+\item{probUns}{Optional numeric vector of length `2^nMarker`. Baseline
+unstimulated probabilities; must sum to 1. If `NULL`, a uniform distribution
+is used.}
 
-\item{probResponse}{List or numeric vector. Response probabilities for stimulated conditions.
-If a numeric vector of length 2^nMarker, it is wrapped in a list for 1 stimulated condition.
-Default is NULL.}
+\item{probResponse}{Optional list (or numeric vector) defining stimulated
+probability shifts. Each response vector must have length `2^nMarker` and is
+added to `probUns` inside [simCytExperiment()]. You are responsible for
+ensuring each resulting stimulated probability vector is valid (non-negative
+and summing to 1).}
 }
 \value{
-A list with elements:
-  - `nMarker`: Number of markers.
-  - `nCluster`: Number of clusters (2^nMarker).
-  - `meanExprMat`: Matrix of dimension `nCluster x nMarker`.
-  - `clusterLabelVec`: Character vector of cluster labels of length `nCluster`.
-  - `probVecUns`: Numeric vector of unstimulated cluster probabilities.
-  - `probResponseVecByStimCondition`: List of response probability vectors or NULL.
+A list with elements `nMarker`, `nCluster`, `meanExprMat`,
+  `clusterLabelVec`, `probVecUns`, and `probResponseVecByStimCondition`.
 }
 \description{
-Parameterised builder for constructing cluster mean matrices, cluster labels,
-unstimulated probabilities, and response probability vectors for n markers.
+Construct the phenotype grid and probability objects consumed by
+[simCytExperiment()]. The scenario contract is currently tied to binary marker
+combinations, so the number of populations is fixed at `nCluster = 2^nMarker`.
+}
+\examples{
+scenario <- simCytBuildScenario(
+  nMarker = 2,
+  lowMean = 0,
+  highMean = 5,
+  probUns = c(0.7, 0.1, 0.1, 0.1),
+  probResponse = c(-0.1, 0, 0, 0.1)
+)
+scenario$nCluster
+scenario$clusterLabelVec
+
 }

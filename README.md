@@ -73,19 +73,21 @@ library(simcyto)
 # 1. Build a scenario (e.g. 2-marker / 4-cluster)
 sc <- simCytScenarioBivariate()
 
-# 2. Run an experiment simulation
+# 2. Run an experiment simulation using the scenario contract
 sim_res <- simCytExperiment(
+  scenario = sc,
   nSample = 2,
-  nMarker = sc$nMarker,
   nCondition = 2,
-  nCluster = sc$nCluster,
   nCellByCondition = 100,
   transformationFunc = simCytTransformIdentity(),
-  meanExprMat = sc$meanExprMat,
-  clusterLabelVec = sc$clusterLabelVec,
-  probVecUns = sc$probVecUns,
-  probResponseVecByStimCondition = sc$probResponseVecByStimCondition
+  mixtureType = "gaussianOnly",
+  probExact = FALSE
 )
+
+# 3. Inspect expression matrices and per-cell truth labels
+names(sim_res$flowFrameList)
+head(flowCore::exprs(sim_res$flowFrameList[[1]]))
+table(sim_res$labelsList[[1]])
 ```
 
 High-level simulation now supports a compact scenario contract directly in `simCytExperiment()`: users may pass a scenario list created by a scenario builder and provide only the experiment-level settings that are not redundant with the phenotype grid or probability tables.

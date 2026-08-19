@@ -2,7 +2,7 @@
 % Please edit documentation in R/scenarios.R
 \name{simCytScenarioBivariate}
 \alias{simCytScenarioBivariate}
-\title{Construct a bivariate simulation scenario (2 markers)}
+\title{Construct a bivariate scenario (`nMarker = 2`)}
 \usage{
 simCytScenarioBivariate(
   lowMean = 0,
@@ -12,17 +12,32 @@ simCytScenarioBivariate(
 )
 }
 \arguments{
-\item{lowMean}{Numeric. Mean for negative marker expressions. Default is 0.}
+\item{lowMean}{Numeric scalar. Mean expression assigned to marker-negative
+populations.}
 
-\item{highMean}{Numeric. Mean for positive marker expressions. Default is 5.}
+\item{highMean}{Numeric scalar. Mean expression assigned to marker-positive
+populations.}
 
-\item{probUns}{Numeric vector of length 4. Unstimulated cluster probabilities. Default is `c(0.7, 0.1, 0.1, 0.1)`.}
+\item{probUns}{Optional numeric vector of length `2^nMarker`. Baseline
+unstimulated probabilities; must sum to 1. If `NULL`, a uniform distribution
+is used.}
 
-\item{probResponse}{List or numeric vector of length 4. Response vector for stimulated conditions. Default is `c(-0.1, 0.0, 0.0, 0.1)`.}
+\item{probResponse}{Optional list (or numeric vector) defining stimulated
+probability shifts. Each response vector must have length `2^nMarker` and is
+added to `probUns` inside [simCytExperiment()]. You are responsible for
+ensuring each resulting stimulated probability vector is valid (non-negative
+and summing to 1).}
 }
 \value{
-A scenario list created by `simCytBuildScenario`.
+A scenario list from [simCytBuildScenario()] with `nMarker = 2`.
 }
 \description{
-Helper for 2-marker simulation scenarios.
+Convenience wrapper around [simCytBuildScenario()] for four populations:
+`F1-F2-`, `F1+F2-`, `F1-F2+`, and `F1+F2+`.
+}
+\examples{
+scenario <- simCytScenarioBivariate()
+scenario$clusterLabelVec
+scenario$probVecUns
+
 }
