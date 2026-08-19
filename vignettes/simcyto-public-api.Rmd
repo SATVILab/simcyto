@@ -14,11 +14,16 @@ knitr::opts_chunk$set(
 )
 ```
 
-`simcyto` simulates cytometry data using a stable high-level API:
+The supported high-level `simcyto` workflow is:
 
 ```r
-simCytExperiment() -> simCytSample() -> simCytCondition() -> simCytCluster()
+scenario -> simCytExperiment() -> result
 ```
+
+Internally, experiment simulation follows the hierarchy
+`simCytExperiment() -> simCytSample() -> simCytCondition() -> simCytCluster()`.
+The lower-level functions are implementation details rather than the public
+workflow.
 
 ## 1) Build a scenario specification
 
