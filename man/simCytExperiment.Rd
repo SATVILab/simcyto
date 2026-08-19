@@ -5,23 +5,24 @@
 \title{Simulate a set of stimulation conditions for multiple biological samples}
 \usage{
 simCytExperiment(
-  nSample,
-  nMarker,
-  nCondition,
-  nCluster,
-  nCellByCondition,
-  transformationFunc,
+  nSample = NULL,
+  nMarker = NULL,
+  nCondition = NULL,
+  nCluster = NULL,
+  nCellByCondition = NULL,
+  transformationFunc = NULL,
   mixtureType = "gaussianOnly",
   meanExprMat = NA,
   clusterLabelVec = NA,
-  probVecUns,
+  probVecUns = NULL,
   probExact = FALSE,
   probResponseVecByStimCondition = NULL,
   samplePerturbationSd = 0,
   conditionPerturbationSd = 0,
   clusterPerturbationSd = 0,
   covEvMin = 1,
-  covEvMax = 2
+  covEvMax = 2,
+  scenario = NULL
 )
 }
 \arguments{
@@ -32,7 +33,9 @@ simCytExperiment(
 \item{nCondition}{Integer. Number of conditions per sample. The first
 condition is unstimulated and the rest are stimulated.}
 
-\item{nCluster}{Integer. Number of clusters. Must equal `2^nMarker`.}
+\item{nCluster}{Integer. Number of phenotype clusters. The current simulation
+contract explicitly requires `nCluster == 2^nMarker`; this is not a latent
+generalisation of the model.}
 
 \item{nCellByCondition}{Numeric or integer vector. Number of cells per
 condition. If length is 1, the value is recycled across all conditions.}
@@ -70,6 +73,13 @@ perturbations applied during cell-level simulation. Default is 0.}
 \item{covEvMin}{Numeric. Minimum eigenvalue for cluster covariance matrices. Default is 1.}
 
 \item{covEvMax}{Numeric. Maximum eigenvalue for cluster covariance matrices. Default is 2.}
+
+\item{scenario}{Optional scenario list created by a scenario builder such as
+`simCytScenarioBivariate()` or `simCytScenarioUnivariate()`. When supplied,
+any missing experiment values are filled from the scenario object while
+preserving explicit arguments as the authoritative overrides. The scenario
+contract is intentionally limited to the phenotype grid and probability
+fields consumed by the experiment layer.}
 }
 \value{
 A list with two elements:

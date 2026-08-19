@@ -88,7 +88,7 @@ sim_res <- simCytExperiment(
 )
 ```
 
-Future work will consolidate high-level scenario building directly within `simCytExperiment()` options while preserving explicit parity and backwards compatibility.
+High-level simulation now supports a compact scenario contract directly in `simCytExperiment()`: users may pass a scenario list created by a scenario builder and provide only the experiment-level settings that are not redundant with the phenotype grid or probability tables.
 
 ## Repository Structure
 

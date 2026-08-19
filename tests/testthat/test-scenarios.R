@@ -45,6 +45,40 @@ test_that("scenarios can be passed directly into simCytExperiment", {
   expect_true(all(res$labelsList[["sample001_unstim"]] %in% sc$clusterLabelVec))
 })
 
+test_that("simCytExperiment accepts a scenario object as a direct contract", {
+  sc <- simCytScenarioBivariate()
+  f_id <- simCytTransformIdentity()
+
+  set.seed(123)
+  res <- simCytExperiment(
+    scenario = sc,
+    nSample = 1,
+    nCondition = 2,
+    nCellByCondition = 50,
+    transformationFunc = f_id
+  )
+
+  set.seed(123)
+  expected <- simCytExperiment(
+    nSample = 1,
+    nMarker = sc$nMarker,
+    nCondition = 2,
+    nCluster = sc$nCluster,
+    nCellByCondition = 50,
+    transformationFunc = f_id,
+    meanExprMat = sc$meanExprMat,
+    clusterLabelVec = sc$clusterLabelVec,
+    probVecUns = sc$probVecUns,
+    probResponseVecByStimCondition = sc$probResponseVecByStimCondition
+  )
+
+  expect_named(res, c("flowFrameList", "labelsList"))
+  expect_length(res$flowFrameList, 2)
+  expect_true(all(res$labelsList[["sample001_unstim"]] %in% sc$clusterLabelVec))
+  expect_equal(res$labelsList[["sample001_unstim"]],
+    expected$labelsList[["sample001_unstim"]])
+})
+
 test_that("fixed-seed regression test for scenario builders ensures deterministic outputs", {
   set.seed(100)
   sc1 <- simCytScenarioUnivariate(lowMean = 1, highMean = 8, probUns = c(0.9, 0.1), probResponse = c(-0.05, 0.05))
