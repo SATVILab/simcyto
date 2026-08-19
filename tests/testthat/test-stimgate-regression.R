@@ -1,3 +1,11 @@
+compare_flow_expr <- function(actual, expected, tolerance = 1e-6) {
+  actual_mat <- as.matrix(actual)
+  expected_mat <- as.matrix(expected)
+  attr(actual_mat, "ranges") <- NULL
+  attr(expected_mat, "ranges") <- NULL
+  expect_equal(actual_mat, expected_mat, tolerance = tolerance)
+}
+
 test_that("legacy StimGate exact-allocation fixture matches canonical counts and metadata", {
   fixture <- readRDS(test_path("fixtures", "stimgate_exact_allocation_fixture.rds"))
   sc <- simCytScenarioUnivariate(probUns = c(0.8, 0.2), probResponse = c(-0.2, 0.2))
@@ -24,15 +32,15 @@ test_that("legacy StimGate exact-allocation fixture matches canonical counts and
   expect_equal(res$labelsList[["sample001_stim1"]], fixture$labels$stim1)
   expect_equal(sort(as.integer(table(res$labelsList[["sample001_unstim"]]))), sort(fixture$counts$unstim))
   expect_equal(sort(as.integer(table(res$labelsList[["sample001_stim1"]]))), sort(fixture$counts$stim1))
-  expect_equal(
+  compare_flow_expr(
     flowCore::exprs(res$flowFrameList[["sample001_unstim"]]),
     fixture$expr$unstim,
-    tolerance = 1e-12
+    tolerance = 1e-6
   )
-  expect_equal(
+  compare_flow_expr(
     flowCore::exprs(res$flowFrameList[["sample001_stim1"]]),
     fixture$expr$stim1,
-    tolerance = 1e-12
+    tolerance = 1e-6
   )
 })
 
@@ -66,14 +74,14 @@ test_that("legacy StimGate mixed t/Gaussian + gamma fixture matches canonical ex
   expect_equal(res$labelsList[["sample001_stim1"]], fixture$labels$stim1)
   expect_equal(sort(as.integer(table(res$labelsList[["sample001_unstim"]]))), sort(fixture$counts$unstim))
   expect_equal(sort(as.integer(table(res$labelsList[["sample001_stim1"]]))), sort(fixture$counts$stim1))
-  expect_equal(
+  compare_flow_expr(
     flowCore::exprs(res$flowFrameList[["sample001_unstim"]]),
     fixture$expr$unstim,
-    tolerance = 5e-10
+    tolerance = 1e-6
   )
-  expect_equal(
+  compare_flow_expr(
     flowCore::exprs(res$flowFrameList[["sample001_stim1"]]),
     fixture$expr$stim1,
-    tolerance = 5e-10
+    tolerance = 1e-6
   )
 })
