@@ -74,19 +74,22 @@ simCytSample <- function(
     nCellByCondition
   }
 
-  probVecByCondition <- list(probVecUns)
+  probVecByCondition <- vector("list", nCondition)
+  probVecByCondition[[1L]] <- probVecUns
+
   if (!is.null(probResponseVecByStimCondition)) {
-    probVecByCondition <- probVecByCondition |>
-      append(lapply(probResponseVecByStimCondition, function(probResponseVec) {
-        probVecUns + probResponseVec
-      }))
+    for (stimInd in seq_len(nCondition - 1L)) {
+      probVecByCondition[[stimInd + 1L]] <- probVecUns + probResponseVecByStimCondition[[stimInd]]
+    }
+  } else {
+    for (stimInd in seq_len(nCondition - 1L)) {
+      probVecByCondition[[stimInd + 1L]] <- probVecUns
+    }
   }
 
   conditionLabelVec <- c("unstim", paste0("stim", seq_len(nCondition - 1L)))
-  flowList <- lapply(seq_len(nCondition), function(i) NULL) |>
-    stats::setNames(conditionLabelVec)
-  labelsList <- lapply(seq_len(nCondition), function(i) NULL) |>
-    stats::setNames(conditionLabelVec)
+  flowList <- stats::setNames(lapply(seq_len(nCondition), function(i) NULL), conditionLabelVec)
+  labelsList <- stats::setNames(lapply(seq_len(nCondition), function(i) NULL), conditionLabelVec)
 
   lapply(seq_len(nCondition), function(i) {
     meanExprMat <- if (conditionPerturbationSd == 0L) {
@@ -142,11 +145,26 @@ simCytSample <- function(
         row.names = c("name", "desc", "range", "minRange", "maxRange")
       )
     )
+    paramAnnotated@data$name <- as.character(paramAnnotated@data$name)
+    names(paramAnnotated@data$name) <- NULL
+    paramAnnotated@data$desc <- as.character(paramAnnotated@data$desc)
+    names(paramAnnotated@data$desc) <- NULL
 
     ff <- flowCore::flowFrame(
       exprs = outListCondition$conditionMatrix,
       parameters = paramAnnotated
     )
+    ff@parameters@data$name <- as.character(paste0("F", seq_len(nMarker)))
+    names(ff@parameters@data$name) <- NULL
+    ff@parameters@data$desc <- as.character(paste0("MarkerF", seq_len(nMarker)))
+    names(ff@parameters@data$desc) <- NULL
+    exprMatrix <- flowCore::exprs(ff)
+    colnames(exprMatrix) <- paste0("F", seq_len(nMarker))
+    flowCore::exprs(ff) <- exprMatrix
+    exprRange <- apply(flowCore::exprs(ff), 2, max)
+    ff@parameters@data$range <- exprRange
+    ff@parameters@data$minRange <- apply(flowCore::exprs(ff), 2, min)
+    ff@parameters@data$maxRange <- exprRange
     flowList[[i]] <<- ff
     labelsList[[i]] <<- outListCondition$conditionLabels
     NULL
