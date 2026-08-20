@@ -2,25 +2,24 @@
 % Please edit documentation in R/transformations.R
 \name{simCytTransformSkew}
 \alias{simCytTransformSkew}
-\title{Skew-normal noise transformation}
+\title{StimGate skew transformation}
 \usage{
-simCytTransformSkew(shape = 0, location = 0, scale = 1)
+simCytTransformSkew(epsilon = 0.5, delta = 1)
 }
 \arguments{
-\item{shape}{Numeric scalar. Shape (skewness) parameter.}
+\item{epsilon}{Numeric scalar. Base epsilon parameter. Default is \code{0.5}.}
 
-\item{location}{Numeric scalar. Location parameter.}
-
-\item{scale}{Numeric scalar. Scale parameter (\verb{> 0}).}
+\item{delta}{Numeric scalar. Delta parameter. Default is \code{1}.}
 }
 \value{
-Function that adds skew-normal noise to \code{x}.
+Function that applies the StimGate skew transformation to \code{x}.
 }
 \description{
-Adds skew-normal distributed noise to \code{x}.
+Reproduces the current StimGate \code{calc_skew()} helper, including the
+mean-dependent \code{epsilon} weighting and stochastic gamma-divisor term.
 }
 \examples{
-f <- simCytTransformSkew(shape = 2, location = 0, scale = 1)
+f <- simCytTransformSkew()
 set.seed(1)
 f(c(1, 1, 1))
 

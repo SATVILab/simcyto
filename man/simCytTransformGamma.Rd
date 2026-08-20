@@ -2,24 +2,19 @@
 % Please edit documentation in R/transformations.R
 \name{simCytTransformGamma}
 \alias{simCytTransformGamma}
-\title{Gamma noise transformation}
+\title{StimGate gamma transformation}
 \usage{
-simCytTransformGamma(shape = 1, scale = 1)
-}
-\arguments{
-\item{shape}{Numeric scalar. Gamma shape parameter.}
-
-\item{scale}{Numeric scalar. Gamma scale parameter.}
+simCytTransformGamma()
 }
 \value{
-Function that adds gamma-distributed noise to \code{x}.
+Function that transforms \code{x} with the StimGate gamma formula.
 }
 \description{
-Gamma noise transformation
+Reproduces the current StimGate \code{calc_gamma()} helper:
+\code{gamma(1 + abs(x / 4))}.
 }
 \examples{
-f <- simCytTransformGamma(shape = 2, scale = 0.5)
-set.seed(1)
-f(c(0, 0, 0))
+f <- simCytTransformGamma()
+f(c(-4, 0, 4))
 
 }

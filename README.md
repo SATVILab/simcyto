@@ -35,8 +35,9 @@ package.
 The package keeps a compact, pinned set of regression fixtures under
 `tests/testthat/fixtures/` for cross-repository parity checks. These fixtures are
 intentionally small enough for routine test runs but cover migration-critical
-paths: exact allocations, multinomial sampling, mixed t/Gaussian simulation,
-transformations, and ratio-corrected perturbations. The canonical fixture
+paths from the legacy FAUST-derived workflow, including exact allocations and
+mixed-distribution simulation. Current StimGate transformation semantics are
+protected separately by direct formula-parity tests in `tests/testthat/`. The canonical fixture
 provenance is recorded as `SATVILab/StimGate` outputs derived from the legacy
 FAUST workflow in `RGLab/faust_manuscript_analyses` at
 `f86f1ab19a41fd2690bf180a7dcf483f9552950c`, preserving the upstream implementation
@@ -52,6 +53,12 @@ The phenotype simulation machinery in `simcyto` derives from the simulation comp
      `simCytCluster()` support `"gaussianOnly"`, `"tOnly"`, and
      `"tPlusGauss"` (heavy-tailed/skewed) mixture components with
      positive-definite covariance matrix generation (`.posDef()`).
+   - **Post-simulation Transformations**:
+     `simCytTransformGaussian()` reproduces StimGate's no-op Gaussian setting,
+     `simCytTransformGamma()` reproduces `gamma(1 + abs(x / 4))`,
+     `simCytTransformGammaFixed()` applies that gamma transform then rescales
+     to the original mean and SD, and `simCytTransformSkew()` reproduces the
+     current StimGate `sinh(...)`/gamma-divisor skew helper.
    - **Perturbations**: Multi-level hierarchy incorporating sample-level, condition-level, and cluster-level perturbations (`samplePerturbationSd`, `conditionPerturbationSd`, `clusterPerturbationSd`).
    - **Ratio Correction**: Upper-population ratio adjustment (`.simCytRatioAdjustUpper()`, `.simCytUsesUpperRatioCorrection()`) preserving distance-to-spread ratios post-transformation for gamma and skew transformations.
    - **Cell Allocation**: `probExact = TRUE` (exact deterministic integer assignment) or `probExact = FALSE` (multinomial sampling).
@@ -91,6 +98,15 @@ table(sim_res$labelsList[[1]])
 ```
 
 High-level simulation now supports a compact scenario contract directly in `simCytExperiment()`: users may pass a scenario list created by a scenario builder and provide only the experiment-level settings that are not redundant with the phenotype grid or probability tables.
+
+`mixtureType` and `transformationFunc` control different parts of the model:
+
+- `mixtureType` chooses the raw simulation distribution (`"gaussianOnly"`,
+  `"tOnly"`, or `"tPlusGauss"`).
+- `transformationFunc` applies a post-simulation transformation to those raw
+  values. For StimGate migration, the public `"gaussian"`, `"gamma"`,
+  `"gammaFixed"`, and `"skew"` constructors intentionally match the current
+  StimGate helper semantics rather than adding random noise.
 
 ## Repository Structure
 

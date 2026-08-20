@@ -19,7 +19,8 @@
 #'         and \code{simCytCondition} for multi-sample and multi-condition dataset simulation.
 #'   \item **Mixture Distributions**: \code{simCytClusterData} supporting \code{"gaussianOnly"},
 #'         \code{"tOnly"}, and \code{"tPlusGauss"}.
-#'   \item **Transformations & Ratio Corrections**: \code{\link{simCytGetTransformation}} and
+#'   \item **Transformations & Ratio Corrections**: post-simulation
+#'         transformations from \code{\link{simCytGetTransformation}} and
 #'         upper-population ratio correction for gamma and skew transformations.
 #' }
 #' Downstream statistical evaluation and mixed-model benchmarking helpers were intentionally

@@ -33,8 +33,9 @@ simCytSample(
 \item{nCellByCondition}{Integer or numeric vector. Number of cells per condition. If a single
 value, it is recycled for all conditions.}
 
-\item{transformationFunc}{Function. Transformation to apply to simulated data (e.g., identity or
-gamma transformation).}
+\item{transformationFunc}{Function. Post-simulation transformation to apply
+to simulated data (for example identity or a StimGate-style gamma
+transformation).}
 
 \item{mixtureType}{Character. Type of mixture distribution: "gaussianOnly", "tOnly", or
 "tPlusGauss".}

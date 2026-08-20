@@ -21,14 +21,19 @@ values. The returned function carries a \code{"sim_transformation"} attribute us
 by ratio-correction logic in gamma/skew pipelines.
 }
 \description{
-Factory for marker-wise transformations used by \code{\link[=simCytExperiment]{simCytExperiment()}}.
+Factory for marker-wise post-simulation transformations used by
+\code{\link[=simCytExperiment]{simCytExperiment()}}.
+}
+\details{
+\code{mixtureType} controls how raw cluster values are simulated. The
+transformation returned here is applied afterwards, marker-wise, to the
+simulated values.
 }
 \examples{
 f_id <- simCytGetTransformation("identity")
 f_id(c(1, 2, 3))
 
-f_gauss <- simCytGetTransformation("gaussian", sd = 0.1)
-set.seed(1)
+f_gauss <- simCytGetTransformation("gaussian")
 f_gauss(c(1, 2, 3))
 
 }

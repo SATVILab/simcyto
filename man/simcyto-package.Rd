@@ -24,7 +24,8 @@ and \code{\link{simCytScenarioBivariate}} for defining cluster mean matrices and
 and \code{simCytCondition} for multi-sample and multi-condition dataset simulation.
 \item \strong{Mixture Distributions}: \code{simCytClusterData} supporting \code{"gaussianOnly"},
 \code{"tOnly"}, and \code{"tPlusGauss"}.
-\item \strong{Transformations & Ratio Corrections}: \code{\link{simCytGetTransformation}} and
+\item \strong{Transformations & Ratio Corrections}: post-simulation
+transformations from \code{\link{simCytGetTransformation}} and
 upper-population ratio correction for gamma and skew transformations.
 }
 Downstream statistical evaluation and mixed-model benchmarking helpers were intentionally

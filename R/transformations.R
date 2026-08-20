@@ -1,6 +1,11 @@
 #' Get a simulation transformation function
 #'
-#' Factory for marker-wise transformations used by [simCytExperiment()].
+#' Factory for marker-wise post-simulation transformations used by
+#' [simCytExperiment()].
+#'
+#' `mixtureType` controls how raw cluster values are simulated. The
+#' transformation returned here is applied afterwards, marker-wise, to the
+#' simulated values.
 #'
 #' @param type Character scalar. One of `"identity"`, `"gaussian"`, `"gamma"`,
 #'   `"gammaFixed"`, or `"skew"`.
@@ -14,8 +19,7 @@
 #' f_id <- simCytGetTransformation("identity")
 #' f_id(c(1, 2, 3))
 #'
-#' f_gauss <- simCytGetTransformation("gaussian", sd = 0.1)
-#' set.seed(1)
+#' f_gauss <- simCytGetTransformation("gaussian")
 #' f_gauss(c(1, 2, 3))
 #'
 #' @export
@@ -46,94 +50,94 @@ simCytTransformIdentity <- function() {
   f
 }
 
-#' Gaussian noise transformation
+#' Gaussian/identity transformation
 #'
-#' @param sd Numeric scalar. Standard deviation of zero-mean Gaussian noise.
+#' Reproduces the current StimGate `"gaussian"` post-simulation setting, which
+#' applies no additional transformation.
 #'
-#' @return Function that adds Gaussian noise to `x`.
+#' @return Function that returns `x` unchanged.
 #'
 #' @examples
-#' f <- simCytTransformGaussian(sd = 0)
+#' f <- simCytTransformGaussian()
 #' f(c(2, 4, 6))
 #'
 #' @export
-simCytTransformGaussian <- function(sd = 1) {
-  f <- function(x) {
-    x + stats::rnorm(length(x), mean = 0, sd = sd)
-  }
+simCytTransformGaussian <- function() {
+  f <- function(x) x
   attr(f, "sim_transformation") <- "gaussian"
   f
 }
 
-#' Gamma noise transformation
+#' StimGate gamma transformation
 #'
-#' @param shape Numeric scalar. Gamma shape parameter.
-#' @param scale Numeric scalar. Gamma scale parameter.
+#' Reproduces the current StimGate `calc_gamma()` helper:
+#' `gamma(1 + abs(x / 4))`.
 #'
-#' @return Function that adds gamma-distributed noise to `x`.
+#' @return Function that transforms `x` with the StimGate gamma formula.
 #'
 #' @examples
-#' f <- simCytTransformGamma(shape = 2, scale = 0.5)
-#' set.seed(1)
-#' f(c(0, 0, 0))
+#' f <- simCytTransformGamma()
+#' f(c(-4, 0, 4))
 #'
 #' @export
-simCytTransformGamma <- function(shape = 1, scale = 1) {
+simCytTransformGamma <- function() {
   f <- function(x) {
-    x + stats::rgamma(length(x), shape = shape, scale = scale)
+    gamma(1 + abs(x / 4))
   }
   attr(f, "sim_transformation") <- "gamma"
   f
 }
 
-#' Gamma noise transformation with fixed mean and standard deviation
+#' StimGate gamma transformation with fixed mean and spread
 #'
-#' Reparameterises Gamma distribution using mean and standard deviation.
+#' Reproduces the current StimGate `calc_gamma_fixed_mean_and_spread()` helper:
+#' apply the StimGate gamma transformation, then linearly rescale the result so
+#' the output has the same mean and standard deviation as the input vector.
 #'
-#' @param mean Numeric scalar. Mean of gamma noise (`> 0`).
-#' @param sd Numeric scalar. Standard deviation of gamma noise (`> 0`).
-#'
-#' @return Function that adds gamma-distributed noise to `x`.
+#' @return Function that applies the fixed-mean/spread StimGate gamma
+#'   transformation.
 #'
 #' @examples
-#' f <- simCytTransformGammaFixed(mean = 2, sd = 1)
-#' set.seed(1)
-#' f(c(0, 0, 0))
+#' f <- simCytTransformGammaFixed()
+#' f(c(1, 2, 3))
 #'
 #' @export
-simCytTransformGammaFixed <- function(mean = 1, sd = 1) {
-  stopifnot(mean > 0, sd > 0)
-  shape <- (mean / sd)^2
-  scale <- (sd^2) / mean
-  simCytTransformGamma(shape = shape, scale = scale)
+simCytTransformGammaFixed <- function() {
+  gammaTransform <- simCytTransformGamma()
+  f <- function(x) {
+    clusterMean <- mean(x)
+    clusterSd <- stats::sd(x)
+    out <- gammaTransform(x)
+    (out - mean(out)) / stats::sd(out) * clusterSd + clusterMean
+  }
+  attr(f, "sim_transformation") <- "gamma_fixed_mean_and_spread"
+  f
 }
 
-#' Skew-normal noise transformation
+#' StimGate skew transformation
 #'
-#' Adds skew-normal distributed noise to `x`.
+#' Reproduces the current StimGate `calc_skew()` helper, including the
+#' mean-dependent `epsilon` weighting and stochastic gamma-divisor term.
 #'
-#' @param shape Numeric scalar. Shape (skewness) parameter.
-#' @param location Numeric scalar. Location parameter.
-#' @param scale Numeric scalar. Scale parameter (`> 0`).
+#' @param epsilon Numeric scalar. Base epsilon parameter. Default is `0.5`.
+#' @param delta Numeric scalar. Delta parameter. Default is `1`.
 #'
-#' @return Function that adds skew-normal noise to `x`.
+#' @return Function that applies the StimGate skew transformation to `x`.
 #'
 #' @examples
-#' f <- simCytTransformSkew(shape = 2, location = 0, scale = 1)
+#' f <- simCytTransformSkew()
 #' set.seed(1)
 #' f(c(1, 1, 1))
 #'
 #' @export
-simCytTransformSkew <- function(shape = 0, location = 0, scale = 1) {
-  stopifnot(scale > 0)
+simCytTransformSkew <- function(epsilon = 0.5, delta = 1) {
   f <- function(x) {
-    n <- length(x)
-    u0 <- stats::rnorm(n)
-    u1 <- stats::rnorm(n)
-    delta <- shape / sqrt(1 + shape^2)
-    z <- delta * abs(u0) + sqrt(1 - delta^2) * u1
-    skewNoise <- location + scale * z
-    x + skewNoise
+    clusterMean <- mean(x)
+    weight <- 1 / (1 + exp(1.5 * (clusterMean - 3.5)))
+    epsilonWeighted <- epsilon * weight
+    out <- sinh(epsilonWeighted + delta * asinh(x))
+    gammaDivisor <- stats::rgamma(length(x), shape = 5, rate = 5)
+    out / sqrt(gammaDivisor)
   }
   attr(f, "sim_transformation") <- "skew"
   f

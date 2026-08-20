@@ -24,7 +24,8 @@ simCytCondition(
 
 \item{nCell}{Integer. Total number of cells to simulate.}
 
-\item{transformationFunc}{Function. Transformation to apply to simulated data.}
+\item{transformationFunc}{Function. Post-simulation transformation to apply
+to simulated data.}
 
 \item{mixtureType}{Character. Type of mixture distribution.}
 
