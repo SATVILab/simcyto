@@ -1,0 +1,470 @@
+---
+title: "Introduction to simcyto"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction to simcyto}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+`simcyto` is an R package for simulating synthetic single-cell cytometry data
+across multi-sample, multi-condition experimental designs. It produces
+`flowCore::flowFrame` objects with per-cell ground-truth cluster labels, making
+it useful for testing and benchmarking cytometry analysis methods such as
+[StimGate](https://github.com/SATVILab/stimgate) and
+[FAUST](https://github.com/RGLab/FAUST).
+
+This vignette walks through the complete public API.
+
+## Overview
+
+The `simcyto` workflow has three stages:
+
+1. **Build a scenario** — define phenotype populations, baseline means, and
+   probability vectors.
+2. **Run the experiment** — call `simCytExperiment()` with the scenario plus
+   design parameters (samples, conditions, perturbations, transformations,
+   stimulation effects).
+3. **Inspect results** — extract `flowFrame` expression matrices and per-cell
+   truth labels.
+
+Internally the simulation follows the hierarchy:
+
+```
+simCytExperiment() → simCytSample() → simCytCondition() → simCytCluster()
+```
+
+The lower-level functions are implementation details; `simCytExperiment()` is
+the public entry point.
+
+## 1. Building scenarios
+
+Scenarios define the phenotype grid consumed by `simCytExperiment()`. The
+package supports binary marker combinations, so the number of populations is
+always `nCluster = 2^nMarker`.
+
+### General builder
+
+`simCytBuildScenario()` is the flexible constructor:
+
+```{r}
+library(simcyto)
+
+scenario <- simCytBuildScenario(
+  nMarker = 2,
+  lowMean = 0,
+  highMean = 5,
+  probUns = c(0.70, 0.10, 0.10, 0.10),
+  probResponse = c(-0.10, 0.00, 0.00, 0.10)
+)
+
+scenario$nMarker
+scenario$nCluster
+scenario$clusterLabelVec
+scenario$meanExprMat
+scenario$probVecUns
+scenario$probResponseVecByStimCondition
+```
+
+The cluster labels follow the `F1-F2+...` convention: one component per marker
+with `+` for high-mean and `-` for low-mean populations.
+
+### Convenience wrappers
+
+For common designs there are one-call wrappers with sensible defaults:
+
+```{r}
+# Univariate (1 marker, 2 populations: "F1-" and "F1+")
+sc_uni <- simCytScenarioUnivariate()
+sc_uni$clusterLabelVec
+
+# Bivariate (2 markers, 4 populations)
+sc_biv <- simCytScenarioBivariate()
+sc_biv$clusterLabelVec
+sc_biv$probVecUns
+```
+
+### Higher-dimensional scenarios
+
+For three or more markers, constructing probability vectors by hand is
+error-prone. `simCytBuildProbVec()` and `simCytBuildResponseVec()` construct
+them from named weights:
+
+```{r}
+# 3 markers → 8 populations.
+# Put most baseline mass on "F1-F2-F3-".
+prob_3m <- simCytBuildProbVec(
+  nMarker = 3,
+  weights = c("F1-F2-F3-" = 10),
+  defaultWeight = 1
+)
+round(prob_3m, 3)
+
+# Shift 10% probability from all-negative to all-positive under stimulation.
+sc3 <- simCytBuildScenario(nMarker = 3)
+delta_3m <- simCytBuildResponseVec(
+  nMarker = 3,
+  shifts = c("F1-F2-F3-" = -0.10, "F1+F2+F3+" = 0.10)
+)
+delta_3m
+sum(delta_3m) # must be 0
+
+# Combine into a scenario
+sc_3marker <- simCytBuildScenario(
+  nMarker = 3,
+  lowMean = 0,
+  highMean = 5,
+  probUns = prob_3m,
+  probResponse = delta_3m
+)
+sc_3marker$nCluster
+```
+
+## 2. Choosing a transformation
+
+Transformations are applied marker-wise *after* the raw mixture simulation.
+They are distinct from `mixtureType` (which controls the raw distribution:
+`"gaussianOnly"`, `"tOnly"`, or `"tPlusGauss"`).
+
+Five constructors are provided, matching current StimGate helper semantics:
+
+| Constructor                    | Formula / Behaviour                              |
+|:-------------------------------|:-------------------------------------------------|
+| `simCytTransformIdentity()`    | No-op: `f(x) = x`                               |
+| `simCytTransformGaussian()`    | No-op (StimGate "gaussian" setting)              |
+| `simCytTransformGamma()`       | `gamma(1 + abs(x / 4))`                         |
+| `simCytTransformGammaFixed()`  | Gamma → rescale to original mean & SD            |
+| `simCytTransformSkew()`        | StimGate `sinh(...)`/gamma-divisor skew transform |
+
+You can also look one up by name with `simCytGetTransformation()`:
+
+```{r}
+id_tf <- simCytTransformIdentity()
+gamma_tf <- simCytTransformGammaFixed()
+
+id_tf(c(1, 2, 3))
+gamma_tf(c(1, 2, 3))
+
+# By name
+skew_tf <- simCytGetTransformation("skew")
+```
+
+## 3. Simulating an experiment
+
+`simCytExperiment()` is the main entry point. It accepts a scenario plus
+experiment-level design parameters.
+
+### Minimal example
+
+```{r}
+set.seed(42)
+
+res <- simCytExperiment(
+  scenario = sc_biv,
+  nSample = 2,
+  nCondition = 2,
+  nCellByCondition = 200,
+  transformationFunc = simCytTransformIdentity(),
+  probExact = FALSE
+)
+
+names(res$flowFrameList)
+```
+
+Each sample–condition combination gets a named entry like `"sample001_unstim"`,
+`"sample001_stim1"`, etc.
+
+### Full parameter set
+
+Here is a call exercising the main knobs:
+
+```{r}
+set.seed(2026)
+
+res_full <- simCytExperiment(
+  scenario = sc_biv,
+  nSample = 3,
+  nCondition = 2,
+  nCellByCondition = c(250, 300),
+  transformationFunc = simCytTransformGammaFixed(),
+  mixtureType = "gaussianOnly",
+  probExact = TRUE,
+  samplePerturbationSd = 0.2,
+  conditionPerturbationSd = 0.1,
+  clusterPerturbationSd = 0.05,
+  covEvMin = 1,
+  covEvMax = 2,
+  stimMeanShift = 0.5,
+  stimSdMultiplier = 1.3,
+  stimMeanShiftClusters = "F1+F2+",
+  stimSdMultiplierClusters = c("F1-F2-", "F1+F2+")
+)
+
+names(res_full$flowFrameList)
+```
+
+#### Key parameters
+
+| Parameter                    | Purpose                                                                 |
+|:-----------------------------|:------------------------------------------------------------------------|
+| `nSample`                    | Number of biological replicates                                         |
+| `nCondition`                 | Number of conditions (1st = unstimulated, rest = stimulated)            |
+| `nCellByCondition`           | Cells per condition (scalar or per-condition vector)                     |
+| `transformationFunc`         | Post-simulation marker-wise transformation                              |
+| `mixtureType`                | Raw simulation distribution (`"gaussianOnly"`, `"tOnly"`, `"tPlusGauss"`) |
+| `probExact`                  | `TRUE` for deterministic rounded allocations; `FALSE` for multinomial   |
+| `samplePerturbationSd`       | SD of per-sample additive mean perturbation                             |
+| `conditionPerturbationSd`    | SD of per-condition additive mean perturbation                          |
+| `clusterPerturbationSd`      | SD of per-cluster (cell-level) mean perturbation                        |
+| `covEvMin` / `covEvMax`      | Eigenvalue range for random positive-definite covariance matrices       |
+| `stimMeanShift`              | Additive location shift applied to stimulated conditions                |
+| `stimMeanShiftClusters`      | Restrict `stimMeanShift` to specific clusters (default: all)            |
+| `stimSdMultiplier`           | SD multiplier for stimulated conditions                                 |
+| `stimSdMultiplierClusters`   | Restrict `stimSdMultiplier` to specific clusters (default: all)         |
+| `scenario`                   | Scenario list from a scenario builder                                   |
+
+## 4. Inspecting results
+
+The return value is a list with two elements:
+
+- **`flowFrameList`**: Named list of `flowCore::flowFrame` objects.
+- **`labelsList`**: Named list of character vectors giving per-cell ground-truth
+  cluster labels aligned with each `flowFrame`.
+
+```{r}
+ff <- res_full$flowFrameList[["sample001_unstim"]]
+expr <- flowCore::exprs(ff)
+dim(expr)
+head(expr)
+
+# Per-cell truth labels
+lbls <- res_full$labelsList[["sample001_unstim"]]
+table(lbls)
+```
+
+## 5. Stimulation effects in depth
+
+The stimulation effects — mean shift and SD inflation — are applied *after*
+the post-simulation transformation and *only* to stimulated conditions. The
+unstimulated condition is never modified.
+
+### Global stimMeanShift
+
+`stimMeanShift` is a deterministic additive constant added to every marker in
+every cluster of each stimulated condition:
+
+```{r}
+set.seed(100)
+res_shift <- simCytExperiment(
+  scenario = sc_biv,
+  nSample = 1,
+  nCondition = 2,
+  nCellByCondition = 200,
+  transformationFunc = simCytTransformIdentity(),
+  probExact = TRUE,
+  stimMeanShift = 2.0
+)
+
+# Compare per-cluster means between unstim and stim
+lbls_u <- res_shift$labelsList[["sample001_unstim"]]
+lbls_s <- res_shift$labelsList[["sample001_stim1"]]
+expr_u <- flowCore::exprs(res_shift$flowFrameList[["sample001_unstim"]])
+expr_s <- flowCore::exprs(res_shift$flowFrameList[["sample001_stim1"]])
+
+# Mean shift visible (approximately +2 across markers)
+colMeans(expr_s[lbls_s == "F1-F2-", , drop = FALSE]) -
+  colMeans(expr_u[lbls_u == "F1-F2-", , drop = FALSE])
+```
+
+### Targeted stimMeanShiftClusters
+
+You can restrict the mean shift to specific clusters by label or index:
+
+```{r}
+set.seed(100)
+res_shift_targeted <- simCytExperiment(
+  scenario = sc_biv,
+  nSample = 1,
+  nCondition = 2,
+  nCellByCondition = 200,
+  transformationFunc = simCytTransformIdentity(),
+  probExact = TRUE,
+  stimMeanShift = 2.0,
+  stimMeanShiftClusters = "F1+F2+"
+)
+
+expr_s2 <- flowCore::exprs(res_shift_targeted$flowFrameList[["sample001_stim1"]])
+lbls_s2 <- res_shift_targeted$labelsList[["sample001_stim1"]]
+
+# Only F1+F2+ is shifted
+colMeans(expr_s2[lbls_s2 == "F1+F2+", , drop = FALSE]) -
+  colMeans(expr_u[lbls_u == "F1+F2+", , drop = FALSE])
+# F1-F2- is unchanged
+colMeans(expr_s2[lbls_s2 == "F1-F2-", , drop = FALSE]) -
+  colMeans(expr_u[lbls_u == "F1-F2-", , drop = FALSE])
+```
+
+### Global stimSdMultiplier
+
+`stimSdMultiplier` scales the within-component standard deviation around each
+cluster's realised transformed mean. The transformation is:
+
+$$\mathbf{x}_{\text{new}} = \boldsymbol{\mu}_c + \text{stimSdMultiplier} \cdot (\mathbf{x} - \boldsymbol{\mu}_c)$$
+
+This preserves each cluster's mean but widens (or narrows) its spread:
+
+```{r}
+set.seed(200)
+res_sd <- simCytExperiment(
+  scenario = sc_biv,
+  nSample = 1,
+  nCondition = 2,
+  nCellByCondition = 200,
+  transformationFunc = simCytTransformIdentity(),
+  probExact = TRUE,
+  stimSdMultiplier = 2.0
+)
+
+expr_sd_u <- flowCore::exprs(res_sd$flowFrameList[["sample001_unstim"]])
+expr_sd_s <- flowCore::exprs(res_sd$flowFrameList[["sample001_stim1"]])
+lbls_sd <- res_sd$labelsList[["sample001_stim1"]]
+idx <- which(lbls_sd == "F1-F2-")
+
+# SD doubles in stim vs the base (approximately)
+apply(expr_sd_s[idx, , drop = FALSE], 2, sd) /
+  apply(expr_sd_u[which(res_sd$labelsList[["sample001_unstim"]] == "F1-F2-"), , drop = FALSE], 2, sd)
+```
+
+### Targeted stimSdMultiplierClusters
+
+Restrict the SD inflation to specific clusters. Unselected clusters (and all
+unstimulated conditions) remain unchanged:
+```{r}
+set.seed(200)
+res_sd_targeted <- simCytExperiment(
+  scenario = sc_biv,
+  nSample = 1,
+  nCondition = 2,
+  nCellByCondition = 200,
+  transformationFunc = simCytTransformIdentity(),
+  probExact = TRUE,
+  stimSdMultiplier = 2.0,
+  stimSdMultiplierClusters = "F1-F2-"
+)
+
+expr_sdt_s <- flowCore::exprs(res_sd_targeted$flowFrameList[["sample001_stim1"]])
+lbls_sdt <- res_sd_targeted$labelsList[["sample001_stim1"]]
+
+# F1-F2- has inflated SD
+idx_neg <- which(lbls_sdt == "F1-F2-")
+apply(expr_sdt_s[idx_neg, , drop = FALSE], 2, sd)
+
+# F1+F2+ retains base SD (un-inflated)
+idx_pos <- which(lbls_sdt == "F1+F2+")
+apply(expr_sdt_s[idx_pos, , drop = FALSE], 2, sd)
+```
+
+### Combining targeted effects independently
+
+`stimMeanShiftClusters` and `stimSdMultiplierClusters` are independent — you
+can target different subsets simultaneously:
+
+```{r}
+set.seed(300)
+res_combo <- simCytExperiment(
+  scenario = sc_biv,
+  nSample = 1,
+  nCondition = 2,
+  nCellByCondition = 200,
+  transformationFunc = simCytTransformIdentity(),
+  probExact = TRUE,
+  stimMeanShift = 1.5,
+  stimMeanShiftClusters = "F1+F2+",
+  stimSdMultiplier = 2.0,
+  stimSdMultiplierClusters = "F1-F2-"
+)
+# F1+F2+ is shifted but not widened
+# F1-F2- is widened but not shifted
+# Other clusters are entirely unchanged
+```
+
+## 6. Cell allocation modes
+
+`probExact` controls how cells are allocated across clusters:
+
+- **`probExact = FALSE`** (default): Multinomial sampling — stochastic
+  allocation proportional to the probability vector. Cluster counts will vary
+  from run to run.
+- **`probExact = TRUE`**: Deterministic integer rounding — each cluster receives
+  `round(nCell * prob)` cells, with residuals distributed to preserve the total.
+  Useful for benchmarking where exact cluster sizes matter.
+
+```{r}
+set.seed(1)
+res_stoch <- simCytExperiment(
+  scenario = sc_biv,
+  nSample = 1,
+  nCondition = 2,
+  nCellByCondition = 100,
+  transformationFunc = simCytTransformIdentity(),
+  probExact = FALSE
+)
+table(res_stoch$labelsList[["sample001_unstim"]])
+
+set.seed(1)
+res_exact <- simCytExperiment(
+  scenario = sc_biv,
+  nSample = 1,
+  nCondition = 2,
+  nCellByCondition = 100,
+  transformationFunc = simCytTransformIdentity(),
+  probExact = TRUE
+)
+table(res_exact$labelsList[["sample001_unstim"]])
+```
+
+## 7. Perturbation layers
+
+`simcyto` supports three additive noise layers that introduce biological
+realism:
+
+- **`samplePerturbationSd`**: Shared shift across all clusters within a
+  sample, drawn once per sample per marker. Models inter-individual variation.
+- **`conditionPerturbationSd`**: Shift applied within each condition of a
+  sample. Models within-individual stimulation batch variation.
+- **`clusterPerturbationSd`**: Per-cluster shift during cell-level simulation.
+  Models intra-population heterogeneity.
+
+```{r}
+set.seed(2026)
+res_perturbed <- simCytExperiment(
+  scenario = sc_biv,
+  nSample = 3,
+  nCondition = 2,
+  nCellByCondition = 200,
+  transformationFunc = simCytTransformIdentity(),
+  probExact = FALSE,
+  samplePerturbationSd = 0.5,
+  conditionPerturbationSd = 0.2,
+  clusterPerturbationSd = 0.1
+)
+
+# Different samples will have shifted means relative to baseline
+sapply(
+  c("sample001_unstim", "sample002_unstim", "sample003_unstim"),
+  function(nm) colMeans(flowCore::exprs(res_perturbed$flowFrameList[[nm]]))
+)
+```
+
+## Session info
+
+```{r}
+sessionInfo()
+```
