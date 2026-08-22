@@ -14,6 +14,7 @@ validateExperimentInputs(
   stimMeanShift = 0,
   stimSdMultiplier = 1,
   stimMeanShiftClusters = NULL,
+  stimSdMultiplierClusters = NULL,
   clusterLabelVec = NULL
 )
 }

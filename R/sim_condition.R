@@ -23,6 +23,9 @@
 #' @param stimMeanShiftClusters Optional character or integer vector. Phenotype
 #'   cluster labels (from `clusterLabelVec`) or 1-based cluster indices to which
 #'   `stimMeanShift` should be applied. Default is `NULL` (applies to all clusters).
+#' @param stimSdMultiplierClusters Optional character or integer vector. Phenotype
+#'   cluster labels (from `clusterLabelVec`) or 1-based cluster indices to which
+#'   `stimSdMultiplier` should be applied. Default is `NULL` (applies to all clusters).
 #'
 #' @return A list with `conditionMatrix` and `conditionLabels`.
 #'
@@ -42,7 +45,8 @@ simCytCondition <- function(
   meanExprMatReference = NULL,
   stimMeanShift = 0,
   stimSdMultiplier = 1,
-  stimMeanShiftClusters = NULL
+  stimMeanShiftClusters = NULL,
+  stimSdMultiplierClusters = NULL
 ) {
   numClusters <- nrow(meanExprMat)
 
@@ -193,7 +197,15 @@ simCytCondition <- function(
   }
 
   if (stimSdMultiplier != 1) {
-    for (clusterNumber in seq_len(numClusters)) {
+    targetSdClusterIndices <- if (is.null(stimSdMultiplierClusters)) {
+      seq_len(numClusters)
+    } else if (is.character(stimSdMultiplierClusters)) {
+      which(clusterLabelVec %in% stimSdMultiplierClusters)
+    } else {
+      as.integer(stimSdMultiplierClusters)
+    }
+
+    for (clusterNumber in targetSdClusterIndices) {
       mat <- transformedDataList[[clusterNumber]]
       if (!is.null(mat) && nrow(mat) > 0L) {
         cMeans <- colMeans(mat)

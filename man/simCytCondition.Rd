@@ -19,7 +19,8 @@ simCytCondition(
   meanExprMatReference = NULL,
   stimMeanShift = 0,
   stimSdMultiplier = 1,
-  stimMeanShiftClusters = NULL
+  stimMeanShiftClusters = NULL,
+  stimSdMultiplierClusters = NULL
 )
 }
 \arguments{
@@ -58,6 +59,10 @@ standard deviation around each component's realised transformed mean. Default is
 \item{stimMeanShiftClusters}{Optional character or integer vector. Phenotype
 cluster labels (from \code{clusterLabelVec}) or 1-based cluster indices to which
 \code{stimMeanShift} should be applied. Default is \code{NULL} (applies to all clusters).}
+
+\item{stimSdMultiplierClusters}{Optional character or integer vector. Phenotype
+cluster labels (from \code{clusterLabelVec}) or 1-based cluster indices to which
+\code{stimSdMultiplier} should be applied. Default is \code{NULL} (applies to all clusters).}
 }
 \value{
 A list with \code{conditionMatrix} and \code{conditionLabels}.

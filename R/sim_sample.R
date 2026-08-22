@@ -36,6 +36,9 @@
 #' @param stimMeanShiftClusters Optional character or integer vector. Phenotype
 #'   cluster labels (from `clusterLabelVec`) or 1-based cluster indices to which
 #'   `stimMeanShift` should be applied. Default is `NULL` (applies to all clusters).
+#' @param stimSdMultiplierClusters Optional character or integer vector. Phenotype
+#'   cluster labels (from `clusterLabelVec`) or 1-based cluster indices to which
+#'   `stimSdMultiplier` should be applied. Default is `NULL` (applies to all clusters).
 #'
 #' @return A list with `flowFrameList` and `conditionLabelsList`.
 #'
@@ -59,7 +62,8 @@ simCytSample <- function(
   meanExprMatReference = NULL,
   stimMeanShift = 0,
   stimSdMultiplier = 1,
-  stimMeanShiftClusters = NULL
+  stimMeanShiftClusters = NULL,
+  stimSdMultiplierClusters = NULL
 ) {
   # Validate inputs using helper
   validateSampleInputs(
@@ -79,7 +83,8 @@ simCytSample <- function(
     covEvMax,
     stimMeanShift,
     stimSdMultiplier,
-    stimMeanShiftClusters
+    stimMeanShiftClusters,
+    stimSdMultiplierClusters
   )
 
   # Begin Simulation Logic
@@ -140,7 +145,8 @@ simCytSample <- function(
       covEvMax = covEvMax,
       stimMeanShift = currentStimMeanShift,
       stimSdMultiplier = currentStimSdMultiplier,
-      stimMeanShiftClusters = stimMeanShiftClusters
+      stimMeanShiftClusters = stimMeanShiftClusters,
+      stimSdMultiplierClusters = stimSdMultiplierClusters
     )
 
     # Create annotated data frame

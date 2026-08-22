@@ -25,6 +25,7 @@ simCytExperiment(
   stimMeanShift = 0,
   stimSdMultiplier = 1,
   stimMeanShiftClusters = NULL,
+  stimSdMultiplierClusters = NULL,
   scenario = NULL
 )
 }
@@ -96,6 +97,11 @@ cluster labels (from \code{clusterLabelVec} or scenario) or 1-based cluster
 indices to which \code{stimMeanShift} should be applied. Default is \code{NULL}
 (applies to all clusters in stimulated conditions).}
 
+\item{stimSdMultiplierClusters}{Optional character or integer vector. Phenotype
+cluster labels (from \code{clusterLabelVec} or scenario) or 1-based cluster
+indices to which \code{stimSdMultiplier} should be applied. Default is \code{NULL}
+(applies to all clusters in stimulated conditions).}
+
 \item{scenario}{Optional scenario list created by a scenario builder such as
 \code{simCytScenarioBivariate()} or \code{simCytScenarioUnivariate()}. When supplied,
 any missing experiment values are filled from the scenario object while
@@ -136,7 +142,8 @@ sim_res <- simCytExperiment(
   probExact = FALSE,
   stimMeanShift = 0.5,
   stimSdMultiplier = 1.2,
-  stimMeanShiftClusters = "F1-F2-"
+  stimMeanShiftClusters = "F1-F2-",
+  stimSdMultiplierClusters = "F1-F2-"
 )
 
 names(sim_res$flowFrameList)

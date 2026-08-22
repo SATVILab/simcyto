@@ -10,6 +10,7 @@ validateExperimentInputs <- function(
   stimMeanShift = 0,
   stimSdMultiplier = 1,
   stimMeanShiftClusters = NULL,
+  stimSdMultiplierClusters = NULL,
   clusterLabelVec = NULL
 ) {
   stopifnot(is.numeric(nSample), length(nSample) == 1L, nSample > 0, nSample == as.integer(nSample))
@@ -38,6 +39,21 @@ validateExperimentInputs <- function(
       stopifnot(all(as.integer(stimMeanShiftClusters) <= as.integer(nCluster)))
     }
   }
+
+  if (!is.null(stimSdMultiplierClusters)) {
+    stopifnot(is.character(stimSdMultiplierClusters) || is.numeric(stimSdMultiplierClusters))
+    stopifnot(length(stimSdMultiplierClusters) > 0L, !any(is.na(stimSdMultiplierClusters)))
+    if (is.character(stimSdMultiplierClusters)) {
+      if (!is.null(clusterLabelVec) && !all(is.na(clusterLabelVec))) {
+        stopifnot(all(stimSdMultiplierClusters %in% clusterLabelVec))
+      }
+    } else {
+      stopifnot(all(is.finite(stimSdMultiplierClusters)))
+      stopifnot(all(stimSdMultiplierClusters == as.integer(stimSdMultiplierClusters)))
+      stopifnot(all(as.integer(stimSdMultiplierClusters) >= 1L))
+      stopifnot(all(as.integer(stimSdMultiplierClusters) <= as.integer(nCluster)))
+    }
+  }
 }
 
 #' @title Validate inputs for simCytSample
@@ -59,7 +75,8 @@ validateSampleInputs <- function(
   covEvMax,
   stimMeanShift = 0,
   stimSdMultiplier = 1,
-  stimMeanShiftClusters = NULL
+  stimMeanShiftClusters = NULL,
+  stimSdMultiplierClusters = NULL
 ) {
   stopifnot(is.logical(probExact), length(probExact) == 1L)
   stopifnot(is.numeric(nCondition), length(nCondition) == 1L, nCondition > 1, nCondition == as.integer(nCondition))
@@ -108,6 +125,19 @@ validateSampleInputs <- function(
       stopifnot(all(stimMeanShiftClusters == as.integer(stimMeanShiftClusters)))
       stopifnot(all(as.integer(stimMeanShiftClusters) >= 1L))
       stopifnot(all(as.integer(stimMeanShiftClusters) <= as.integer(nCluster)))
+    }
+  }
+
+  if (!is.null(stimSdMultiplierClusters)) {
+    stopifnot(is.character(stimSdMultiplierClusters) || is.numeric(stimSdMultiplierClusters))
+    stopifnot(length(stimSdMultiplierClusters) > 0L, !any(is.na(stimSdMultiplierClusters)))
+    if (is.character(stimSdMultiplierClusters)) {
+      stopifnot(all(stimSdMultiplierClusters %in% clusterLabelVec))
+    } else {
+      stopifnot(all(is.finite(stimSdMultiplierClusters)))
+      stopifnot(all(stimSdMultiplierClusters == as.integer(stimSdMultiplierClusters)))
+      stopifnot(all(as.integer(stimSdMultiplierClusters) >= 1L))
+      stopifnot(all(as.integer(stimSdMultiplierClusters) <= as.integer(nCluster)))
     }
   }
 

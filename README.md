@@ -59,10 +59,10 @@ The phenotype simulation machinery in `simcyto` derives from the simulation comp
      `simCytTransformGammaFixed()` applies that gamma transform then rescales
      to the original mean and SD, and `simCytTransformSkew()` reproduces the
      current StimGate `sinh(...)`/gamma-divisor skew helper.
-   - **Perturbations & Condition Mismatches**: Multi-level hierarchy incorporating sample-level, condition-level, and cluster-level perturbations (`samplePerturbationSd`, `conditionPerturbationSd`, `clusterPerturbationSd`), deterministic post-transformation stimulated condition location shifts (`stimMeanShift`, optionally targeted via `stimMeanShiftClusters`), and within-component SD scaling (`stimSdMultiplier`).
-   - **Ratio Correction**: Upper-population ratio adjustment (`.simCytRatioAdjustUpper()`, `.simCytUsesUpperRatioCorrection()`) preserving distance-to-spread ratios post-transformation for gamma and skew transformations.
-   - **Cell Allocation**: `probExact = TRUE` (exact deterministic integer assignment) or `probExact = FALSE` (multinomial sampling).
-   - **Experiment Hierarchy**: `simCytExperiment()` -> `simCytSample()` -> `simCytCondition()` -> `simCytCluster()`.
+    - **Perturbations & Condition Mismatches**: Multi-level hierarchy incorporating sample-level, condition-level, and cluster-level perturbations (`samplePerturbationSd`, `conditionPerturbationSd`, `clusterPerturbationSd`), deterministic post-transformation stimulated condition location shifts (`stimMeanShift`, optionally targeted via `stimMeanShiftClusters`), and within-component SD scaling (`stimSdMultiplier`, optionally targeted via `stimSdMultiplierClusters`).
+    - **Ratio Correction**: Upper-population ratio adjustment (`.simCytRatioAdjustUpper()`, `.simCytUsesUpperRatioCorrection()`) preserving distance-to-spread ratios post-transformation for gamma and skew transformations.
+    - **Cell Allocation**: `probExact = TRUE` (exact deterministic integer assignment) or `probExact = FALSE` (multinomial sampling).
+    - **Experiment Hierarchy**: `simCytExperiment()` -> `simCytSample()` -> `simCytCondition()` -> `simCytCluster()`.
 
 2. **FAUST-Specific Interoperability**:
    - `flowFrame` and cluster label generation (compatible with FAUST phenotype label annotations) returned via `flowFrameList` and `labelsList` in `simCytExperiment()`.

@@ -1035,3 +1035,412 @@ test_that("stimMeanShiftClusters validates inputs", {
     "is.character\\(stimMeanShiftClusters\\) \\|\\| is.numeric\\(stimMeanShiftClusters\\)"
   )
 })
+
+test_that("stimSdMultiplierClusters = NULL reproduces existing whole-condition SD inflation", {
+  sc <- simCytScenarioBivariate()
+
+  set.seed(501)
+  res_default <- simCytExperiment(
+    scenario = sc,
+    nSample = 1,
+    nCondition = 2,
+    nCellByCondition = 60,
+    transformationFunc = simCytTransformIdentity(),
+    probExact = TRUE,
+    stimSdMultiplier = 1.6
+  )
+
+  set.seed(501)
+  res_null <- simCytExperiment(
+    scenario = sc,
+    nSample = 1,
+    nCondition = 2,
+    nCellByCondition = 60,
+    transformationFunc = simCytTransformIdentity(),
+    probExact = TRUE,
+    stimSdMultiplier = 1.6,
+    stimSdMultiplierClusters = NULL
+  )
+
+  expect_equal(
+    flowCore::exprs(res_null$flowFrameList[["sample001_stim1"]]),
+    flowCore::exprs(res_default$flowFrameList[["sample001_stim1"]])
+  )
+  expect_equal(res_null$labelsList, res_default$labelsList)
+})
+
+test_that("stimSdMultiplierClusters targeting all clusters agrees with default NULL", {
+  sc <- simCytScenarioBivariate()
+
+  set.seed(502)
+  res_null <- simCytExperiment(
+    scenario = sc,
+    nSample = 1,
+    nCondition = 2,
+    nCellByCondition = 60,
+    transformationFunc = simCytTransformIdentity(),
+    probExact = TRUE,
+    stimSdMultiplier = 1.6,
+    stimSdMultiplierClusters = NULL
+  )
+
+  set.seed(502)
+  res_all_names <- simCytExperiment(
+    scenario = sc,
+    nSample = 1,
+    nCondition = 2,
+    nCellByCondition = 60,
+    transformationFunc = simCytTransformIdentity(),
+    probExact = TRUE,
+    stimSdMultiplier = 1.6,
+    stimSdMultiplierClusters = sc$clusterLabelVec
+  )
+
+  set.seed(502)
+  res_all_indices <- simCytExperiment(
+    scenario = sc,
+    nSample = 1,
+    nCondition = 2,
+    nCellByCondition = 60,
+    transformationFunc = simCytTransformIdentity(),
+    probExact = TRUE,
+    stimSdMultiplier = 1.6,
+    stimSdMultiplierClusters = seq_len(sc$nCluster)
+  )
+
+  expect_equal(
+    flowCore::exprs(res_all_names$flowFrameList[["sample001_stim1"]]),
+    flowCore::exprs(res_null$flowFrameList[["sample001_stim1"]])
+  )
+  expect_equal(
+    flowCore::exprs(res_all_indices$flowFrameList[["sample001_stim1"]]),
+    flowCore::exprs(res_null$flowFrameList[["sample001_stim1"]])
+  )
+})
+
+test_that("stimSdMultiplierClusters inflates only targeted cluster in univariate StimGate scenario", {
+  meanMat <- matrix(c(0, 5), nrow = 2, ncol = 1)
+  labels <- c("gn", "gp")
+  mult <- 1.75
+
+  set.seed(602)
+  res_base <- simCytExperiment(
+    nSample = 1,
+    nMarker = 1,
+    nCondition = 2,
+    nCluster = 2,
+    nCellByCondition = 100,
+    transformationFunc = simCytTransformIdentity(),
+    mixtureType = "gaussianOnly",
+    meanExprMat = meanMat,
+    clusterLabelVec = labels,
+    probVecUns = c(0.8, 0.2),
+    probExact = TRUE,
+    probResponseVecByStimCondition = list(c(-0.1, 0.1)),
+    stimSdMultiplier = 1
+  )
+
+  set.seed(602)
+  res_gn_scaled <- simCytExperiment(
+    nSample = 1,
+    nMarker = 1,
+    nCondition = 2,
+    nCluster = 2,
+    nCellByCondition = 100,
+    transformationFunc = simCytTransformIdentity(),
+    mixtureType = "gaussianOnly",
+    meanExprMat = meanMat,
+    clusterLabelVec = labels,
+    probVecUns = c(0.8, 0.2),
+    probExact = TRUE,
+    probResponseVecByStimCondition = list(c(-0.1, 0.1)),
+    stimSdMultiplier = mult,
+    stimSdMultiplierClusters = "gn"
+  )
+
+  # 1. Unstimulated expression is completely unchanged
+  expect_equal(
+    flowCore::exprs(res_gn_scaled$flowFrameList[["sample001_unstim"]]),
+    flowCore::exprs(res_base$flowFrameList[["sample001_unstim"]])
+  )
+
+  expr_base_stim <- flowCore::exprs(res_base$flowFrameList[["sample001_stim1"]])
+  expr_scaled_stim <- flowCore::exprs(res_gn_scaled$flowFrameList[["sample001_stim1"]])
+  lbls <- res_base$labelsList[["sample001_stim1"]]
+
+  # 2. "gn" cluster in stimulated condition has SD multiplied by mult, mean invariant
+  gn_idx <- which(lbls == "gn")
+  expect_equal(stats::sd(expr_scaled_stim[gn_idx, 1]), stats::sd(expr_base_stim[gn_idx, 1]) * mult, tolerance = 1e-10)
+  expect_equal(mean(expr_scaled_stim[gn_idx, 1]), mean(expr_base_stim[gn_idx, 1]), tolerance = 1e-10)
+
+  # 3. "gp" cluster in stimulated condition is completely unchanged
+  gp_idx <- which(lbls == "gp")
+  expect_equal(expr_scaled_stim[gp_idx, 1], expr_base_stim[gp_idx, 1], tolerance = 1e-10)
+
+  # 4. Cell counts and labels are identical
+  expect_equal(res_gn_scaled$labelsList, res_base$labelsList)
+
+  # 5. Integer index selector (1L for "gn") gives identical result
+  set.seed(602)
+  res_idx_scaled <- simCytExperiment(
+    nSample = 1,
+    nMarker = 1,
+    nCondition = 2,
+    nCluster = 2,
+    nCellByCondition = 100,
+    transformationFunc = simCytTransformIdentity(),
+    mixtureType = "gaussianOnly",
+    meanExprMat = meanMat,
+    clusterLabelVec = labels,
+    probVecUns = c(0.8, 0.2),
+    probExact = TRUE,
+    probResponseVecByStimCondition = list(c(-0.1, 0.1)),
+    stimSdMultiplier = mult,
+    stimSdMultiplierClusters = 1L
+  )
+  expect_equal(
+    flowCore::exprs(res_idx_scaled$flowFrameList[["sample001_stim1"]]),
+    flowCore::exprs(res_gn_scaled$flowFrameList[["sample001_stim1"]])
+  )
+})
+
+test_that("stimSdMultiplierClusters targets specific subset in multivariate scenarios", {
+  sc <- simCytScenarioBivariate()
+  mult <- 2.2
+  target_clusters <- c("F1-F2-", "F1+F2-")
+
+  set.seed(703)
+  res_base <- simCytExperiment(
+    scenario = sc,
+    nSample = 1,
+    nCondition = 2,
+    nCellByCondition = 120,
+    transformationFunc = simCytTransformIdentity(),
+    probExact = TRUE,
+    stimSdMultiplier = 1
+  )
+
+  set.seed(703)
+  res_targeted <- simCytExperiment(
+    scenario = sc,
+    nSample = 1,
+    nCondition = 2,
+    nCellByCondition = 120,
+    transformationFunc = simCytTransformIdentity(),
+    probExact = TRUE,
+    stimSdMultiplier = mult,
+    stimSdMultiplierClusters = target_clusters
+  )
+
+  expr_base_stim <- flowCore::exprs(res_base$flowFrameList[["sample001_stim1"]])
+  expr_target_stim <- flowCore::exprs(res_targeted$flowFrameList[["sample001_stim1"]])
+  lbls <- res_base$labelsList[["sample001_stim1"]]
+
+  for (cl in sc$clusterLabelVec) {
+    idx <- which(lbls == cl)
+    if (cl %in% target_clusters) {
+      for (m in seq_len(ncol(expr_base_stim))) {
+        expect_equal(stats::sd(expr_target_stim[idx, m]), stats::sd(expr_base_stim[idx, m]) * mult, tolerance = 1e-10)
+        expect_equal(mean(expr_target_stim[idx, m]), mean(expr_base_stim[idx, m]), tolerance = 1e-10)
+      }
+    } else {
+      expect_equal(expr_target_stim[idx, , drop = FALSE], expr_base_stim[idx, , drop = FALSE], tolerance = 1e-10)
+    }
+  }
+})
+
+test_that("stimSdMultiplierClusters works with non-linear transformations", {
+  sc <- simCytScenarioBivariate()
+  mult <- 1.5
+  target_cluster <- "F1-F2-"
+
+  for (trans in list(simCytTransformGamma(), simCytTransformSkew())) {
+    set.seed(804)
+    res_base <- simCytExperiment(
+      scenario = sc,
+      nSample = 1,
+      nCondition = 2,
+      nCellByCondition = 80,
+      transformationFunc = trans,
+      probExact = TRUE,
+      stimSdMultiplier = 1
+    )
+
+    set.seed(804)
+    res_targeted <- simCytExperiment(
+      scenario = sc,
+      nSample = 1,
+      nCondition = 2,
+      nCellByCondition = 80,
+      transformationFunc = trans,
+      probExact = TRUE,
+      stimSdMultiplier = mult,
+      stimSdMultiplierClusters = target_cluster
+    )
+
+    expr_base_stim <- flowCore::exprs(res_base$flowFrameList[["sample001_stim1"]])
+    expr_target_stim <- flowCore::exprs(res_targeted$flowFrameList[["sample001_stim1"]])
+    lbls <- res_base$labelsList[["sample001_stim1"]]
+
+    for (cl in sc$clusterLabelVec) {
+      idx <- which(lbls == cl)
+      if (cl == target_cluster) {
+        for (m in seq_len(ncol(expr_base_stim))) {
+          expect_equal(stats::sd(expr_target_stim[idx, m]), stats::sd(expr_base_stim[idx, m]) * mult, tolerance = 1e-10)
+          expect_equal(mean(expr_target_stim[idx, m]), mean(expr_base_stim[idx, m]), tolerance = 1e-10)
+        }
+      } else {
+        expect_equal(expr_target_stim[idx, , drop = FALSE], expr_base_stim[idx, , drop = FALSE], tolerance = 1e-10)
+      }
+    }
+  }
+})
+
+test_that("stimSdMultiplierClusters and stimMeanShiftClusters operate independently on distinct clusters", {
+  sc <- simCytScenarioBivariate()
+  shift <- 1.0
+  mult <- 1.8
+
+  set.seed(905)
+  res_base <- simCytExperiment(
+    scenario = sc,
+    nSample = 1,
+    nCondition = 2,
+    nCellByCondition = 100,
+    transformationFunc = simCytTransformIdentity(),
+    probExact = TRUE
+  )
+
+  set.seed(905)
+  res_both <- simCytExperiment(
+    scenario = sc,
+    nSample = 1,
+    nCondition = 2,
+    nCellByCondition = 100,
+    transformationFunc = simCytTransformIdentity(),
+    probExact = TRUE,
+    stimMeanShift = shift,
+    stimMeanShiftClusters = "F1-F2-",
+    stimSdMultiplier = mult,
+    stimSdMultiplierClusters = "F1+F2-"
+  )
+
+  expr_base_stim <- flowCore::exprs(res_base$flowFrameList[["sample001_stim1"]])
+  expr_both_stim <- flowCore::exprs(res_both$flowFrameList[["sample001_stim1"]])
+  lbls <- res_base$labelsList[["sample001_stim1"]]
+
+  # "F1-F2-": shifted mean, unscaled SD
+  idx_shift_only <- which(lbls == "F1-F2-")
+  for (m in seq_len(ncol(expr_base_stim))) {
+    expect_equal(mean(expr_both_stim[idx_shift_only, m]), mean(expr_base_stim[idx_shift_only, m]) + shift, tolerance = 1e-10)
+    expect_equal(stats::sd(expr_both_stim[idx_shift_only, m]), stats::sd(expr_base_stim[idx_shift_only, m]), tolerance = 1e-10)
+  }
+
+  # "F1+F2-": unshifted mean, scaled SD
+  idx_scale_only <- which(lbls == "F1+F2-")
+  for (m in seq_len(ncol(expr_base_stim))) {
+    expect_equal(mean(expr_both_stim[idx_scale_only, m]), mean(expr_base_stim[idx_scale_only, m]), tolerance = 1e-10)
+    expect_equal(stats::sd(expr_both_stim[idx_scale_only, m]), stats::sd(expr_base_stim[idx_scale_only, m]) * mult, tolerance = 1e-10)
+  }
+
+  # Remaining clusters: completely unchanged
+  for (cl in c("F1-F2+", "F1+F2+")) {
+    idx_none <- which(lbls == cl)
+    expect_equal(expr_both_stim[idx_none, , drop = FALSE], expr_base_stim[idx_none, , drop = FALSE], tolerance = 1e-10)
+  }
+})
+
+test_that("stimSdMultiplierClusters validates inputs", {
+  sc <- simCytScenarioBivariate()
+
+  # Unknown cluster name
+  expect_error(
+    simCytExperiment(
+      scenario = sc,
+      nSample = 1,
+      nCondition = 2,
+      nCellByCondition = 10,
+      transformationFunc = identity,
+      stimSdMultiplierClusters = "nonexistent_cluster"
+    ),
+    "all\\(stimSdMultiplierClusters %in% clusterLabelVec\\)"
+  )
+
+  # Out of range integer index
+  expect_error(
+    simCytExperiment(
+      scenario = sc,
+      nSample = 1,
+      nCondition = 2,
+      nCellByCondition = 10,
+      transformationFunc = identity,
+      stimSdMultiplierClusters = 5L
+    ),
+    "as.integer\\(stimSdMultiplierClusters\\) <= as.integer\\(nCluster\\)"
+  )
+
+  # Zero or negative index
+  expect_error(
+    simCytExperiment(
+      scenario = sc,
+      nSample = 1,
+      nCondition = 2,
+      nCellByCondition = 10,
+      transformationFunc = identity,
+      stimSdMultiplierClusters = 0L
+    ),
+    "as.integer\\(stimSdMultiplierClusters\\) >= 1L"
+  )
+
+  # Non-integer numeric
+  expect_error(
+    simCytExperiment(
+      scenario = sc,
+      nSample = 1,
+      nCondition = 2,
+      nCellByCondition = 10,
+      transformationFunc = identity,
+      stimSdMultiplierClusters = 1.5
+    ),
+    "stimSdMultiplierClusters == as.integer\\(stimSdMultiplierClusters\\)"
+  )
+
+  # Empty vector
+  expect_error(
+    simCytExperiment(
+      scenario = sc,
+      nSample = 1,
+      nCondition = 2,
+      nCellByCondition = 10,
+      transformationFunc = identity,
+      stimSdMultiplierClusters = character(0)
+    ),
+    "length\\(stimSdMultiplierClusters\\) > 0L"
+  )
+
+  # NA in vector
+  expect_error(
+    simCytExperiment(
+      scenario = sc,
+      nSample = 1,
+      nCondition = 2,
+      nCellByCondition = 10,
+      transformationFunc = identity,
+      stimSdMultiplierClusters = c("F1-F2-", NA)
+    ),
+    "!any\\(is.na\\(stimSdMultiplierClusters\\)\\)"
+  )
+
+  # Invalid type (e.g. boolean)
+  expect_error(
+    simCytExperiment(
+      scenario = sc,
+      nSample = 1,
+      nCondition = 2,
+      nCellByCondition = 10,
+      transformationFunc = identity,
+      stimSdMultiplierClusters = TRUE
+    ),
+    "is.character\\(stimSdMultiplierClusters\\) \\|\\| is.numeric\\(stimSdMultiplierClusters\\)"
+  )
+})
