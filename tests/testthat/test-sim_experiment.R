@@ -188,3 +188,71 @@ test_that("fixed-seed regression test validates mixture types and ratio correcti
   expect_equal(flowCore::exprs(res_gamma1$flowFrameList[["sample001_stim1"]]),
                flowCore::exprs(res_gamma2$flowFrameList[["sample001_stim1"]]))
 })
+
+test_that("probExact handles cases where rounded allocations exceed total cells without negative counts", {
+  sc <- simCytScenarioBivariate(
+    probUns = c(0.05, 0.31, 0.32, 0.32),
+    probResponse = c(0, 0, 0, 0)
+  )
+
+  res <- simCytExperiment(
+    scenario = sc,
+    nSample = 1,
+    nCondition = 2,
+    nCellByCondition = 5,
+    transformationFunc = simCytTransformIdentity(),
+    probExact = TRUE
+  )
+
+  lbls_unstim <- res$labelsList[["sample001_unstim"]]
+  lbls_stim1 <- res$labelsList[["sample001_stim1"]]
+
+  expect_length(lbls_unstim, 5L)
+  expect_length(lbls_stim1, 5L)
+  expect_equal(nrow(flowCore::exprs(res$flowFrameList[["sample001_unstim"]])), 5L)
+  expect_equal(nrow(flowCore::exprs(res$flowFrameList[["sample001_stim1"]])), 5L)
+})
+
+test_that("simCytExperiment and simCytSample support single-cell simulations", {
+  sc1 <- simCytScenarioUnivariate()
+  res1 <- simCytExperiment(
+    scenario = sc1,
+    nSample = 1,
+    nCondition = 2,
+    nCellByCondition = 1,
+    transformationFunc = simCytTransformIdentity(),
+    probExact = TRUE
+  )
+  expect_equal(nrow(flowCore::exprs(res1$flowFrameList[[1]])), 1L)
+  expect_equal(ncol(flowCore::exprs(res1$flowFrameList[[1]])), 1L)
+
+  sc2 <- simCytScenarioBivariate()
+  res2 <- simCytExperiment(
+    scenario = sc2,
+    nSample = 1,
+    nCondition = 2,
+    nCellByCondition = 1,
+    transformationFunc = simCytTransformIdentity(),
+    probExact = FALSE
+  )
+  expect_equal(nrow(flowCore::exprs(res2$flowFrameList[[1]])), 1L)
+  expect_equal(ncol(flowCore::exprs(res2$flowFrameList[[1]])), 2L)
+  expect_equal(colnames(flowCore::exprs(res2$flowFrameList[[1]])), c("F1", "F2"))
+})
+
+test_that("simCytSample accepts numeric parameters without strict integer type requirements", {
+  sc <- simCytScenarioBivariate()
+  res <- simcyto:::simCytSample(
+    nMarker = 2,
+    nCondition = 2,
+    nCluster = 4,
+    nCellByCondition = 10,
+    transformationFunc = simCytTransformIdentity(),
+    meanExprMat = sc$meanExprMat,
+    clusterLabelVec = sc$clusterLabelVec,
+    probVecUns = sc$probVecUns,
+    probExact = FALSE
+  )
+  expect_named(res, c("flowFrameList", "conditionLabelsList"))
+  expect_length(res$flowFrameList, 2)
+})

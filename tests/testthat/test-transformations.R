@@ -162,3 +162,10 @@ test_that("simCytExperiment matches pinned StimGate gamma and skew transformatio
     skew_expected$flowFrameList[["sample001_stim1"]]
   )
 })
+
+test_that("simCytTransformGammaFixed handles single element and zero-variance inputs safely", {
+  f_gamma_fixed <- simCytTransformGammaFixed()
+  expect_equal(f_gamma_fixed(5), 5)
+  expect_equal(f_gamma_fixed(c(3, 3, 3)), c(3, 3, 3))
+  expect_equal(f_gamma_fixed(numeric(0)), numeric(0))
+})

@@ -8,14 +8,14 @@ validateExperimentInputs <- function(
   nCellByCondition,
   transformationFunc
 ) {
-  stopifnot(nSample > 0L)
-  stopifnot(nMarker > 0L)
-  stopifnot(nCondition > 1L)
-  stopifnot(nCluster > 0L)
+  stopifnot(is.numeric(nSample), length(nSample) == 1L, nSample > 0, nSample == as.integer(nSample))
+  stopifnot(is.numeric(nMarker), length(nMarker) == 1L, nMarker > 0, nMarker == as.integer(nMarker))
+  stopifnot(is.numeric(nCondition), length(nCondition) == 1L, nCondition > 1, nCondition == as.integer(nCondition))
+  stopifnot(is.numeric(nCluster), length(nCluster) == 1L, nCluster > 0, nCluster == as.integer(nCluster))
   stopifnot(nCluster == 2^nMarker)
   stopifnot(is.function(transformationFunc))
   stopifnot(is.numeric(nCellByCondition) || is.integer(nCellByCondition))
-  stopifnot(length(nCellByCondition) %in% c(1L, nCondition))
+  stopifnot(length(nCellByCondition) %in% c(1L, as.integer(nCondition)))
   stopifnot(all(nCellByCondition > 0))
 }
 
@@ -37,27 +37,25 @@ validateSampleInputs <- function(
   covEvMin,
   covEvMax
 ) {
-  stopifnot(is.logical(probExact))
-  stopifnot(is.integer(nCondition))
-  stopifnot(is.integer(nMarker))
-  stopifnot(nCondition > 1L)
-  stopifnot(is.integer(nCluster))
-  stopifnot(nCluster > 0L)
+  stopifnot(is.logical(probExact), length(probExact) == 1L)
+  stopifnot(is.numeric(nCondition), length(nCondition) == 1L, nCondition > 1, nCondition == as.integer(nCondition))
+  stopifnot(is.numeric(nMarker), length(nMarker) == 1L, nMarker > 0, nMarker == as.integer(nMarker))
+  stopifnot(is.numeric(nCluster), length(nCluster) == 1L, nCluster > 0, nCluster == as.integer(nCluster))
   stopifnot(nCluster == 2^nMarker)
   stopifnot(is.function(transformationFunc))
   stopifnot(is.numeric(nCellByCondition) || is.integer(nCellByCondition))
-  stopifnot(length(nCellByCondition) %in% c(1L, nCondition))
+  stopifnot(length(nCellByCondition) %in% c(1L, as.integer(nCondition)))
   stopifnot(all(nCellByCondition > 0))
 
   if (!is.null(probResponseVecByStimCondition)) {
     stopifnot(is.list(probResponseVecByStimCondition))
-    stopifnot(all(sapply(probResponseVecByStimCondition, is.numeric)))
-    stopifnot(length(probResponseVecByStimCondition) == (nCondition - 1L))
-    stopifnot(all(sapply(probResponseVecByStimCondition, length) == nCluster))
+    stopifnot(all(vapply(probResponseVecByStimCondition, is.numeric, logical(1))))
+    stopifnot(length(probResponseVecByStimCondition) == (as.integer(nCondition) - 1L))
+    stopifnot(all(vapply(probResponseVecByStimCondition, length, integer(1)) == as.integer(nCluster)))
   }
 
   stopifnot(is.numeric(probVecUns))
-  stopifnot(length(probVecUns) == nCluster)
+  stopifnot(length(probVecUns) == as.integer(nCluster))
   stopifnot(all(probVecUns >= 0))
   stopifnot(all(probVecUns <= 1))
   stopifnot(abs(sum(probVecUns) - 1) < 1e-6)
@@ -70,12 +68,15 @@ validateSampleInputs <- function(
   stopifnot(length(clusterPerturbationSd) == 1L)
   stopifnot(clusterPerturbationSd >= 0)
 
+  stopifnot(is.numeric(covEvMin), length(covEvMin) == 1L, covEvMin > 0)
+  stopifnot(is.numeric(covEvMax), length(covEvMax) == 1L, covEvMax >= covEvMin)
+
   stopifnot(is.matrix(meanExprMat))
-  stopifnot(nrow(meanExprMat) == nCluster)
-  stopifnot(ncol(meanExprMat) == nMarker)
+  stopifnot(nrow(meanExprMat) == as.integer(nCluster))
+  stopifnot(ncol(meanExprMat) == as.integer(nMarker))
   stopifnot(!any(is.na(meanExprMat)))
   stopifnot(is.numeric(meanExprMat))
 
   stopifnot(is.character(clusterLabelVec))
-  stopifnot(length(clusterLabelVec) == nCluster)
+  stopifnot(length(clusterLabelVec) == as.integer(nCluster))
 }

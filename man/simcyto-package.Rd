@@ -42,10 +42,5 @@ Useful links:
 \author{
 \strong{Maintainer}: Miguel Rodo \email{miguel.rodo@outlook.com}
 
-Authors:
-\itemize{
-  \item Miguel Rodo \email{miguel.rodo@outlook.com}
-}
-
 }
 \keyword{internal}

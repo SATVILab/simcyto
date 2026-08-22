@@ -105,10 +105,20 @@ simCytTransformGamma <- function() {
 simCytTransformGammaFixed <- function() {
   gammaTransform <- simCytTransformGamma()
   f <- function(x) {
+    if (length(x) <= 1L) {
+      return(x)
+    }
     clusterMean <- mean(x)
     clusterSd <- stats::sd(x)
+    if (is.na(clusterSd) || clusterSd == 0) {
+      return(rep(clusterMean, length(x)))
+    }
     out <- gammaTransform(x)
-    (out - mean(out)) / stats::sd(out) * clusterSd + clusterMean
+    outSd <- stats::sd(out)
+    if (is.na(outSd) || outSd == 0) {
+      return(rep(clusterMean, length(x)))
+    }
+    (out - mean(out)) / outSd * clusterSd + clusterMean
   }
   attr(f, "sim_transformation") <- "gamma_fixed_mean_and_spread"
   f

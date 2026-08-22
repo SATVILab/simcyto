@@ -53,12 +53,14 @@ simCytCondition <- function(
       if (diffAlloc > 0) {
         probOrder <- order(probVec, decreasing = TRUE)
         for (i in seq_len(diffAlloc)) {
-          initAllocVec[probOrder[i]] <- initAllocVec[probOrder[i]] + 1
+          idx <- probOrder[((i - 1L) %% length(probOrder)) + 1L]
+          initAllocVec[idx] <- initAllocVec[idx] + 1L
         }
       } else {
-        probOrder <- order(probVec, decreasing = FALSE)
         for (i in seq_len(-diffAlloc)) {
-          initAllocVec[probOrder[i]] <- initAllocVec[probOrder[i]] - 1
+          candidates <- which(initAllocVec > 0L)
+          bestCandidate <- candidates[order(probVec[candidates], decreasing = FALSE)[1L]]
+          initAllocVec[bestCandidate] <- initAllocVec[bestCandidate] - 1L
         }
       }
     }
@@ -217,7 +219,7 @@ reorderVec <- sample.int(nCell)
     outData <- outData[reorderVec]
     outData <- matrix(outData, ncol = 1)
   } else {
-    outData <- outData[reorderVec, ]
+    outData <- outData[reorderVec, , drop = FALSE]
   }
   colnames(outData) <- paste0("F", seq_len(nMarker))
   cellLabelVec <- cellLabelVec[reorderVec]

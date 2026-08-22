@@ -79,6 +79,24 @@ test_that("validateExperimentInputs and validateSampleInputs check parameters ac
     covEvMax = 2
   ))
 
+  # Also accept numeric scalar values (e.g., from interactive calls)
+  expect_silent(validateSampleInputs(
+    nCondition = 2,
+    nMarker = 2,
+    nCluster = 4,
+    nCellByCondition = 100,
+    transformationFunc = identityTrans,
+    probResponseVecByStimCondition = list(c(0, 0, 0, 0)),
+    probVecUns = probUns,
+    probExact = FALSE,
+    conditionPerturbationSd = 0,
+    clusterPerturbationSd = 0,
+    meanExprMat = meanMat,
+    clusterLabelVec = labels,
+    covEvMin = 1,
+    covEvMax = 2
+  ))
+
   expect_error(validateSampleInputs(
     nCondition = 2L,
     nMarker = 2L,
@@ -94,5 +112,22 @@ test_that("validateExperimentInputs and validateSampleInputs check parameters ac
     clusterLabelVec = labels,
     covEvMin = 1,
     covEvMax = 2
+  ))
+
+  expect_error(validateSampleInputs(
+    nCondition = 2L,
+    nMarker = 2L,
+    nCluster = 4L,
+    nCellByCondition = 100L,
+    transformationFunc = identityTrans,
+    probResponseVecByStimCondition = list(c(0, 0, 0, 0)),
+    probVecUns = probUns,
+    probExact = FALSE,
+    conditionPerturbationSd = 0,
+    clusterPerturbationSd = 0,
+    meanExprMat = meanMat,
+    clusterLabelVec = labels,
+    covEvMin = 2, # covEvMin > covEvMax
+    covEvMax = 1
   ))
 })
