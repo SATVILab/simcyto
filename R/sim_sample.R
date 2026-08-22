@@ -33,6 +33,9 @@
 #' @param stimSdMultiplier Numeric scalar. Multiplier applied to stimulated
 #'   conditions post-transformation standard deviation around component means.
 #'   Default is 1.
+#' @param stimMeanShiftClusters Optional character or integer vector. Phenotype
+#'   cluster labels (from `clusterLabelVec`) or 1-based cluster indices to which
+#'   `stimMeanShift` should be applied. Default is `NULL` (applies to all clusters).
 #'
 #' @return A list with `flowFrameList` and `conditionLabelsList`.
 #'
@@ -55,7 +58,8 @@ simCytSample <- function(
   covEvMax = 2,
   meanExprMatReference = NULL,
   stimMeanShift = 0,
-  stimSdMultiplier = 1
+  stimSdMultiplier = 1,
+  stimMeanShiftClusters = NULL
 ) {
   # Validate inputs using helper
   validateSampleInputs(
@@ -74,7 +78,8 @@ simCytSample <- function(
     covEvMin,
     covEvMax,
     stimMeanShift,
-    stimSdMultiplier
+    stimSdMultiplier,
+    stimMeanShiftClusters
   )
 
   # Begin Simulation Logic
@@ -134,7 +139,8 @@ simCytSample <- function(
       covEvMin = covEvMin,
       covEvMax = covEvMax,
       stimMeanShift = currentStimMeanShift,
-      stimSdMultiplier = currentStimSdMultiplier
+      stimSdMultiplier = currentStimSdMultiplier,
+      stimMeanShiftClusters = stimMeanShiftClusters
     )
 
     # Create annotated data frame

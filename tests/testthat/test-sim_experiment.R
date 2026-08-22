@@ -683,3 +683,355 @@ test_that("stimSdMultiplier validates inputs", {
     "is.finite\\(stimSdMultiplier\\)"
   )
 })
+
+test_that("stimMeanShiftClusters = NULL reproduces existing whole-condition shift", {
+  sc <- simCytScenarioBivariate()
+
+  set.seed(101)
+  res_default <- simCytExperiment(
+    scenario = sc,
+    nSample = 1,
+    nCondition = 2,
+    nCellByCondition = 60,
+    transformationFunc = simCytTransformIdentity(),
+    probExact = TRUE,
+    stimMeanShift = 1.5
+  )
+
+  set.seed(101)
+  res_null <- simCytExperiment(
+    scenario = sc,
+    nSample = 1,
+    nCondition = 2,
+    nCellByCondition = 60,
+    transformationFunc = simCytTransformIdentity(),
+    probExact = TRUE,
+    stimMeanShift = 1.5,
+    stimMeanShiftClusters = NULL
+  )
+
+  expect_equal(
+    flowCore::exprs(res_null$flowFrameList[["sample001_stim1"]]),
+    flowCore::exprs(res_default$flowFrameList[["sample001_stim1"]])
+  )
+  expect_equal(res_null$labelsList, res_default$labelsList)
+})
+
+test_that("stimMeanShiftClusters targeting all clusters agrees with default NULL", {
+  sc <- simCytScenarioBivariate()
+
+  set.seed(102)
+  res_null <- simCytExperiment(
+    scenario = sc,
+    nSample = 1,
+    nCondition = 2,
+    nCellByCondition = 60,
+    transformationFunc = simCytTransformIdentity(),
+    probExact = TRUE,
+    stimMeanShift = 1.5,
+    stimMeanShiftClusters = NULL
+  )
+
+  set.seed(102)
+  res_all_names <- simCytExperiment(
+    scenario = sc,
+    nSample = 1,
+    nCondition = 2,
+    nCellByCondition = 60,
+    transformationFunc = simCytTransformIdentity(),
+    probExact = TRUE,
+    stimMeanShift = 1.5,
+    stimMeanShiftClusters = sc$clusterLabelVec
+  )
+
+  set.seed(102)
+  res_all_indices <- simCytExperiment(
+    scenario = sc,
+    nSample = 1,
+    nCondition = 2,
+    nCellByCondition = 60,
+    transformationFunc = simCytTransformIdentity(),
+    probExact = TRUE,
+    stimMeanShift = 1.5,
+    stimMeanShiftClusters = seq_len(sc$nCluster)
+  )
+
+  expect_equal(
+    flowCore::exprs(res_all_names$flowFrameList[["sample001_stim1"]]),
+    flowCore::exprs(res_null$flowFrameList[["sample001_stim1"]])
+  )
+  expect_equal(
+    flowCore::exprs(res_all_indices$flowFrameList[["sample001_stim1"]]),
+    flowCore::exprs(res_null$flowFrameList[["sample001_stim1"]])
+  )
+})
+
+test_that("stimMeanShiftClusters shifts only targeted cluster in univariate StimGate scenario", {
+  meanMat <- matrix(c(0, 5), nrow = 2, ncol = 1)
+  labels <- c("gn", "gp")
+  shift <- 1.8
+
+  set.seed(202)
+  res_base <- simCytExperiment(
+    nSample = 1,
+    nMarker = 1,
+    nCondition = 2,
+    nCluster = 2,
+    nCellByCondition = 100,
+    transformationFunc = simCytTransformIdentity(),
+    mixtureType = "gaussianOnly",
+    meanExprMat = meanMat,
+    clusterLabelVec = labels,
+    probVecUns = c(0.8, 0.2),
+    probExact = TRUE,
+    probResponseVecByStimCondition = list(c(-0.1, 0.1)),
+    stimMeanShift = 0
+  )
+
+  set.seed(202)
+  res_gn_shifted <- simCytExperiment(
+    nSample = 1,
+    nMarker = 1,
+    nCondition = 2,
+    nCluster = 2,
+    nCellByCondition = 100,
+    transformationFunc = simCytTransformIdentity(),
+    mixtureType = "gaussianOnly",
+    meanExprMat = meanMat,
+    clusterLabelVec = labels,
+    probVecUns = c(0.8, 0.2),
+    probExact = TRUE,
+    probResponseVecByStimCondition = list(c(-0.1, 0.1)),
+    stimMeanShift = shift,
+    stimMeanShiftClusters = "gn"
+  )
+
+  # 1. Unstimulated expression is completely unchanged
+  expect_equal(
+    flowCore::exprs(res_gn_shifted$flowFrameList[["sample001_unstim"]]),
+    flowCore::exprs(res_base$flowFrameList[["sample001_unstim"]])
+  )
+
+  expr_base_stim <- flowCore::exprs(res_base$flowFrameList[["sample001_stim1"]])
+  expr_shifted_stim <- flowCore::exprs(res_gn_shifted$flowFrameList[["sample001_stim1"]])
+  lbls <- res_base$labelsList[["sample001_stim1"]]
+
+  # 2. "gn" cluster in stimulated condition is shifted by shift
+  gn_idx <- which(lbls == "gn")
+  expect_equal(expr_shifted_stim[gn_idx, 1], expr_base_stim[gn_idx, 1] + shift, tolerance = 1e-10)
+
+  # 3. "gp" cluster in stimulated condition is completely unchanged
+  gp_idx <- which(lbls == "gp")
+  expect_equal(expr_shifted_stim[gp_idx, 1], expr_base_stim[gp_idx, 1], tolerance = 1e-10)
+
+  # 4. Within-cluster SD is invariant
+  expect_equal(stats::sd(expr_shifted_stim[gn_idx, 1]), stats::sd(expr_base_stim[gn_idx, 1]), tolerance = 1e-10)
+  expect_equal(stats::sd(expr_shifted_stim[gp_idx, 1]), stats::sd(expr_base_stim[gp_idx, 1]), tolerance = 1e-10)
+
+  # 5. Cell counts and labels are identical
+  expect_equal(res_gn_shifted$labelsList, res_base$labelsList)
+
+  # 6. Integer index selector (1L for "gn") gives identical result
+  set.seed(202)
+  res_idx_shifted <- simCytExperiment(
+    nSample = 1,
+    nMarker = 1,
+    nCondition = 2,
+    nCluster = 2,
+    nCellByCondition = 100,
+    transformationFunc = simCytTransformIdentity(),
+    mixtureType = "gaussianOnly",
+    meanExprMat = meanMat,
+    clusterLabelVec = labels,
+    probVecUns = c(0.8, 0.2),
+    probExact = TRUE,
+    probResponseVecByStimCondition = list(c(-0.1, 0.1)),
+    stimMeanShift = shift,
+    stimMeanShiftClusters = 1L
+  )
+  expect_equal(
+    flowCore::exprs(res_idx_shifted$flowFrameList[["sample001_stim1"]]),
+    flowCore::exprs(res_gn_shifted$flowFrameList[["sample001_stim1"]])
+  )
+})
+
+test_that("stimMeanShiftClusters targets specific subset in multivariate scenarios", {
+  sc <- simCytScenarioBivariate()
+  shift <- -1.5
+  target_clusters <- c("F1-F2-", "F1+F2-")
+
+  set.seed(303)
+  res_base <- simCytExperiment(
+    scenario = sc,
+    nSample = 1,
+    nCondition = 2,
+    nCellByCondition = 120,
+    transformationFunc = simCytTransformIdentity(),
+    probExact = TRUE,
+    stimMeanShift = 0
+  )
+
+  set.seed(303)
+  res_targeted <- simCytExperiment(
+    scenario = sc,
+    nSample = 1,
+    nCondition = 2,
+    nCellByCondition = 120,
+    transformationFunc = simCytTransformIdentity(),
+    probExact = TRUE,
+    stimMeanShift = shift,
+    stimMeanShiftClusters = target_clusters
+  )
+
+  expr_base_stim <- flowCore::exprs(res_base$flowFrameList[["sample001_stim1"]])
+  expr_target_stim <- flowCore::exprs(res_targeted$flowFrameList[["sample001_stim1"]])
+  lbls <- res_base$labelsList[["sample001_stim1"]]
+
+  for (cl in sc$clusterLabelVec) {
+    idx <- which(lbls == cl)
+    if (cl %in% target_clusters) {
+      expect_equal(expr_target_stim[idx, , drop = FALSE], expr_base_stim[idx, , drop = FALSE] + shift, tolerance = 1e-10)
+    } else {
+      expect_equal(expr_target_stim[idx, , drop = FALSE], expr_base_stim[idx, , drop = FALSE], tolerance = 1e-10)
+    }
+  }
+})
+
+test_that("stimMeanShiftClusters works with non-linear transformations", {
+  sc <- simCytScenarioBivariate()
+  shift <- 0.8
+  target_cluster <- "F1-F2-"
+
+  for (trans in list(simCytTransformGamma(), simCytTransformSkew())) {
+    set.seed(404)
+    res_base <- simCytExperiment(
+      scenario = sc,
+      nSample = 1,
+      nCondition = 2,
+      nCellByCondition = 80,
+      transformationFunc = trans,
+      probExact = TRUE,
+      stimMeanShift = 0
+    )
+
+    set.seed(404)
+    res_targeted <- simCytExperiment(
+      scenario = sc,
+      nSample = 1,
+      nCondition = 2,
+      nCellByCondition = 80,
+      transformationFunc = trans,
+      probExact = TRUE,
+      stimMeanShift = shift,
+      stimMeanShiftClusters = target_cluster
+    )
+
+    expr_base_stim <- flowCore::exprs(res_base$flowFrameList[["sample001_stim1"]])
+    expr_target_stim <- flowCore::exprs(res_targeted$flowFrameList[["sample001_stim1"]])
+    lbls <- res_base$labelsList[["sample001_stim1"]]
+
+    for (cl in sc$clusterLabelVec) {
+      idx <- which(lbls == cl)
+      if (cl == target_cluster) {
+        expect_equal(expr_target_stim[idx, , drop = FALSE], expr_base_stim[idx, , drop = FALSE] + shift, tolerance = 1e-10)
+      } else {
+        expect_equal(expr_target_stim[idx, , drop = FALSE], expr_base_stim[idx, , drop = FALSE], tolerance = 1e-10)
+      }
+    }
+  }
+})
+
+test_that("stimMeanShiftClusters validates inputs", {
+  sc <- simCytScenarioBivariate()
+
+  # Unknown cluster name
+  expect_error(
+    simCytExperiment(
+      scenario = sc,
+      nSample = 1,
+      nCondition = 2,
+      nCellByCondition = 10,
+      transformationFunc = identity,
+      stimMeanShiftClusters = "nonexistent_cluster"
+    ),
+    "all\\(stimMeanShiftClusters %in% clusterLabelVec\\)"
+  )
+
+  # Out of range integer index
+  expect_error(
+    simCytExperiment(
+      scenario = sc,
+      nSample = 1,
+      nCondition = 2,
+      nCellByCondition = 10,
+      transformationFunc = identity,
+      stimMeanShiftClusters = 5L
+    ),
+    "as.integer\\(stimMeanShiftClusters\\) <= as.integer\\(nCluster\\)"
+  )
+
+  # Zero or negative index
+  expect_error(
+    simCytExperiment(
+      scenario = sc,
+      nSample = 1,
+      nCondition = 2,
+      nCellByCondition = 10,
+      transformationFunc = identity,
+      stimMeanShiftClusters = 0L
+    ),
+    "as.integer\\(stimMeanShiftClusters\\) >= 1L"
+  )
+
+  # Non-integer numeric
+  expect_error(
+    simCytExperiment(
+      scenario = sc,
+      nSample = 1,
+      nCondition = 2,
+      nCellByCondition = 10,
+      transformationFunc = identity,
+      stimMeanShiftClusters = 1.5
+    ),
+    "stimMeanShiftClusters == as.integer\\(stimMeanShiftClusters\\)"
+  )
+
+  # Empty vector
+  expect_error(
+    simCytExperiment(
+      scenario = sc,
+      nSample = 1,
+      nCondition = 2,
+      nCellByCondition = 10,
+      transformationFunc = identity,
+      stimMeanShiftClusters = character(0)
+    ),
+    "length\\(stimMeanShiftClusters\\) > 0L"
+  )
+
+  # NA in vector
+  expect_error(
+    simCytExperiment(
+      scenario = sc,
+      nSample = 1,
+      nCondition = 2,
+      nCellByCondition = 10,
+      transformationFunc = identity,
+      stimMeanShiftClusters = c("F1-F2-", NA)
+    ),
+    "!any\\(is.na\\(stimMeanShiftClusters\\)\\)"
+  )
+
+  # Invalid type (e.g. boolean)
+  expect_error(
+    simCytExperiment(
+      scenario = sc,
+      nSample = 1,
+      nCondition = 2,
+      nCellByCondition = 10,
+      transformationFunc = identity,
+      stimMeanShiftClusters = TRUE
+    ),
+    "is.character\\(stimMeanShiftClusters\\) \\|\\| is.numeric\\(stimMeanShiftClusters\\)"
+  )
+})

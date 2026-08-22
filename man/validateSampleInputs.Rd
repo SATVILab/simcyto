@@ -20,7 +20,8 @@ validateSampleInputs(
   covEvMin,
   covEvMax,
   stimMeanShift = 0,
-  stimSdMultiplier = 1
+  stimSdMultiplier = 1,
+  stimMeanShiftClusters = NULL
 )
 }
 \description{

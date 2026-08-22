@@ -52,6 +52,10 @@
 #' @param stimSdMultiplier Numeric scalar. Multiplier applied to stimulated
 #'   conditions post-transformation standard deviation around component means.
 #'   Default is 1.
+#' @param stimMeanShiftClusters Optional character or integer vector. Phenotype
+#'   cluster labels (from `clusterLabelVec` or scenario) or 1-based cluster
+#'   indices to which `stimMeanShift` should be applied. Default is `NULL`
+#'   (applies to all clusters in stimulated conditions).
 #' @param scenario Optional scenario list created by a scenario builder such as
 #'   `simCytScenarioBivariate()` or `simCytScenarioUnivariate()`. When supplied,
 #'   any missing experiment values are filled from the scenario object while
@@ -79,7 +83,8 @@
 #'   mixtureType = "gaussianOnly",
 #'   probExact = FALSE,
 #'   stimMeanShift = 0.5,
-#'   stimSdMultiplier = 1.2
+#'   stimSdMultiplier = 1.2,
+#'   stimMeanShiftClusters = "F1-F2-"
 #' )
 #'
 #' names(sim_res$flowFrameList)
@@ -108,6 +113,7 @@ simCytExperiment <- function(
   covEvMax = 2,
   stimMeanShift = 0,
   stimSdMultiplier = 1,
+  stimMeanShiftClusters = NULL,
   scenario = NULL
 ) {
   if (!is.null(scenario)) {
@@ -172,7 +178,9 @@ simCytExperiment <- function(
     nCellByCondition,
     transformationFunc,
     stimMeanShift,
-    stimSdMultiplier
+    stimSdMultiplier,
+    stimMeanShiftClusters,
+    clusterLabelVec
   )
 
   meanExprMatReference <- meanExprMat
@@ -229,7 +237,8 @@ simCytExperiment <- function(
       covEvMin = covEvMin,
       covEvMax = covEvMax,
       stimMeanShift = stimMeanShift,
-      stimSdMultiplier = stimSdMultiplier
+      stimSdMultiplier = stimSdMultiplier,
+      stimMeanShiftClusters = stimMeanShiftClusters
     )
 
     for (condInd in seq_len(nCondition)) {

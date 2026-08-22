@@ -12,7 +12,9 @@ validateExperimentInputs(
   nCellByCondition,
   transformationFunc,
   stimMeanShift = 0,
-  stimSdMultiplier = 1
+  stimSdMultiplier = 1,
+  stimMeanShiftClusters = NULL,
+  clusterLabelVec = NULL
 )
 }
 \description{

@@ -22,7 +22,8 @@ simCytSample(
   covEvMax = 2,
   meanExprMatReference = NULL,
   stimMeanShift = 0,
-  stimSdMultiplier = 1
+  stimSdMultiplier = 1,
+  stimMeanShiftClusters = NULL
 )
 }
 \arguments{
@@ -73,6 +74,10 @@ applied to stimulated conditions post-transformation. Default is 0.}
 \item{stimSdMultiplier}{Numeric scalar. Multiplier applied to stimulated
 conditions post-transformation standard deviation around component means.
 Default is 1.}
+
+\item{stimMeanShiftClusters}{Optional character or integer vector. Phenotype
+cluster labels (from \code{clusterLabelVec}) or 1-based cluster indices to which
+\code{stimMeanShift} should be applied. Default is \code{NULL} (applies to all clusters).}
 }
 \value{
 A list with \code{flowFrameList} and \code{conditionLabelsList}.

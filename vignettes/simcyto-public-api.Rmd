@@ -133,7 +133,7 @@ table(sim_res$labelsList[["sample001_unstim"]])
 - mixture distributions (`gaussianOnly`, `tOnly`, `tPlusGauss`)
 - baseline and response probabilities (`probVecUns`, response shifts)
 - perturbation layers (sample, condition, cluster)
-- deterministic post-transformation condition mismatch (`stimMeanShift`, `stimSdMultiplier`)
+- deterministic post-transformation condition mismatch (`stimMeanShift`, optionally targeted via `stimMeanShiftClusters`, and `stimSdMultiplier`)
 - transformations and exact vs sampled allocation (`probExact`)
 
 Phenotype/knockout/spike-in/batch/nuisance functionality is not exposed as a

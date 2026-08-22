@@ -20,6 +20,9 @@
 #'   applied to all transformed expression values in this condition. Default is 0.
 #' @param stimSdMultiplier Numeric scalar. Multiplier applied to within-component
 #'   standard deviation around each component's realised transformed mean. Default is 1.
+#' @param stimMeanShiftClusters Optional character or integer vector. Phenotype
+#'   cluster labels (from `clusterLabelVec`) or 1-based cluster indices to which
+#'   `stimMeanShift` should be applied. Default is `NULL` (applies to all clusters).
 #'
 #' @return A list with `conditionMatrix` and `conditionLabels`.
 #'
@@ -38,7 +41,8 @@ simCytCondition <- function(
   covEvMax = 2,
   meanExprMatReference = NULL,
   stimMeanShift = 0,
-  stimSdMultiplier = 1
+  stimSdMultiplier = 1,
+  stimMeanShiftClusters = NULL
 ) {
   numClusters <- nrow(meanExprMat)
 
@@ -200,7 +204,15 @@ simCytCondition <- function(
   }
 
   if (stimMeanShift != 0) {
-    for (clusterNumber in seq_len(numClusters)) {
+    targetClusterIndices <- if (is.null(stimMeanShiftClusters)) {
+      seq_len(numClusters)
+    } else if (is.character(stimMeanShiftClusters)) {
+      which(clusterLabelVec %in% stimMeanShiftClusters)
+    } else {
+      as.integer(stimMeanShiftClusters)
+    }
+
+    for (clusterNumber in targetClusterIndices) {
       if (!is.null(transformedDataList[[clusterNumber]])) {
         transformedDataList[[clusterNumber]] <-
           transformedDataList[[clusterNumber]] + stimMeanShift
