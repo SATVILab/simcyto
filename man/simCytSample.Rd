@@ -20,7 +20,9 @@ simCytSample(
   clusterPerturbationSd = 0,
   covEvMin = 1,
   covEvMax = 2,
-  meanExprMatReference = NULL
+  meanExprMatReference = NULL,
+  stimMeanShift = 0,
+  stimSdMultiplier = 1
 )
 }
 \arguments{
@@ -64,6 +66,13 @@ within each condition.}
 \item{covEvMax}{Numeric. Maximum eigenvalue for cluster covariance matrices. Default is 2.}
 
 \item{meanExprMatReference}{Numeric matrix. Reference cluster mean matrix.}
+
+\item{stimMeanShift}{Numeric scalar. Deterministic signed additive mean shift
+applied to stimulated conditions post-transformation. Default is 0.}
+
+\item{stimSdMultiplier}{Numeric scalar. Multiplier applied to stimulated
+conditions post-transformation standard deviation around component means.
+Default is 1.}
 }
 \value{
 A list with \code{flowFrameList} and \code{conditionLabelsList}.

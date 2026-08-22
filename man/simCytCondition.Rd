@@ -16,7 +16,9 @@ simCytCondition(
   clusterPerturbationSd = 0,
   covEvMin = 1,
   covEvMax = 2,
-  meanExprMatReference = NULL
+  meanExprMatReference = NULL,
+  stimMeanShift = 0,
+  stimSdMultiplier = 1
 )
 }
 \arguments{
@@ -45,6 +47,12 @@ Default is \code{FALSE}.}
 \item{covEvMax}{Numeric. Maximum eigenvalue for cluster covariance matrices. Default is 2.}
 
 \item{meanExprMatReference}{Numeric matrix. Reference cluster mean matrix.}
+
+\item{stimMeanShift}{Numeric scalar. Deterministic signed additive mean shift
+applied to all transformed expression values in this condition. Default is 0.}
+
+\item{stimSdMultiplier}{Numeric scalar. Multiplier applied to within-component
+standard deviation around each component's realised transformed mean. Default is 1.}
 }
 \value{
 A list with \code{conditionMatrix} and \code{conditionLabels}.

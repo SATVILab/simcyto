@@ -59,7 +59,7 @@ The phenotype simulation machinery in `simcyto` derives from the simulation comp
      `simCytTransformGammaFixed()` applies that gamma transform then rescales
      to the original mean and SD, and `simCytTransformSkew()` reproduces the
      current StimGate `sinh(...)`/gamma-divisor skew helper.
-   - **Perturbations**: Multi-level hierarchy incorporating sample-level, condition-level, and cluster-level perturbations (`samplePerturbationSd`, `conditionPerturbationSd`, `clusterPerturbationSd`).
+   - **Perturbations & Condition Mismatches**: Multi-level hierarchy incorporating sample-level, condition-level, and cluster-level perturbations (`samplePerturbationSd`, `conditionPerturbationSd`, `clusterPerturbationSd`), and deterministic post-transformation stimulated condition location shifts (`stimMeanShift`) and within-component SD scaling (`stimSdMultiplier`).
    - **Ratio Correction**: Upper-population ratio adjustment (`.simCytRatioAdjustUpper()`, `.simCytUsesUpperRatioCorrection()`) preserving distance-to-spread ratios post-transformation for gamma and skew transformations.
    - **Cell Allocation**: `probExact = TRUE` (exact deterministic integer assignment) or `probExact = FALSE` (multinomial sampling).
    - **Experiment Hierarchy**: `simCytExperiment()` -> `simCytSample()` -> `simCytCondition()` -> `simCytCluster()`.

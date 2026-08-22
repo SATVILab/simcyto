@@ -16,6 +16,10 @@
 #' @param covEvMin Numeric. Minimum eigenvalue for cluster covariance matrices. Default is 1.
 #' @param covEvMax Numeric. Maximum eigenvalue for cluster covariance matrices. Default is 2.
 #' @param meanExprMatReference Numeric matrix. Reference cluster mean matrix.
+#' @param stimMeanShift Numeric scalar. Deterministic signed additive mean shift
+#'   applied to all transformed expression values in this condition. Default is 0.
+#' @param stimSdMultiplier Numeric scalar. Multiplier applied to within-component
+#'   standard deviation around each component's realised transformed mean. Default is 1.
 #'
 #' @return A list with `conditionMatrix` and `conditionLabels`.
 #'
@@ -32,7 +36,9 @@ simCytCondition <- function(
   clusterPerturbationSd = 0,
   covEvMin = 1,
   covEvMax = 2,
-  meanExprMatReference = NULL
+  meanExprMatReference = NULL,
+  stimMeanShift = 0,
+  stimSdMultiplier = 1
 ) {
   numClusters <- nrow(meanExprMat)
 
@@ -178,6 +184,26 @@ simCytCondition <- function(
             lowerMeanRawReference = lowerMeanRawReference,
             lowerMeanTransReference = lowerMeanTransReference
           )
+      }
+    }
+  }
+
+  if (stimSdMultiplier != 1) {
+    for (clusterNumber in seq_len(numClusters)) {
+      mat <- transformedDataList[[clusterNumber]]
+      if (!is.null(mat) && nrow(mat) > 0L) {
+        cMeans <- colMeans(mat)
+        transformedDataList[[clusterNumber]] <-
+          sweep(sweep(mat, 2L, cMeans, "-") * stimSdMultiplier, 2L, cMeans, "+")
+      }
+    }
+  }
+
+  if (stimMeanShift != 0) {
+    for (clusterNumber in seq_len(numClusters)) {
+      if (!is.null(transformedDataList[[clusterNumber]])) {
+        transformedDataList[[clusterNumber]] <-
+          transformedDataList[[clusterNumber]] + stimMeanShift
       }
     }
   }

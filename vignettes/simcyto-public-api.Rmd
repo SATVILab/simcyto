@@ -92,12 +92,15 @@ sim_res <- simCytExperiment(
   conditionPerturbationSd = 0.1,
   clusterPerturbationSd = 0.05,
   covEvMin = 1,
-  covEvMax = 2
+  covEvMax = 2,
+  stimMeanShift = 0.5,
+  stimSdMultiplier = 1.2
 )
 ```
 
 `probExact = TRUE` switches to deterministic rounded cluster allocations per
 condition instead of sampled multinomial allocations.
+`stimMeanShift` adds a deterministic signed location shift and `stimSdMultiplier` scales within-component spread in stimulated conditions on the final transformed expression scale.
 
 ## 4) Inspect returned objects and truth labels
 
@@ -130,6 +133,7 @@ table(sim_res$labelsList[["sample001_unstim"]])
 - mixture distributions (`gaussianOnly`, `tOnly`, `tPlusGauss`)
 - baseline and response probabilities (`probVecUns`, response shifts)
 - perturbation layers (sample, condition, cluster)
+- deterministic post-transformation condition mismatch (`stimMeanShift`, `stimSdMultiplier`)
 - transformations and exact vs sampled allocation (`probExact`)
 
 Phenotype/knockout/spike-in/batch/nuisance functionality is not exposed as a

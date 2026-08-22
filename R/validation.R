@@ -6,7 +6,9 @@ validateExperimentInputs <- function(
   nCondition,
   nCluster,
   nCellByCondition,
-  transformationFunc
+  transformationFunc,
+  stimMeanShift = 0,
+  stimSdMultiplier = 1
 ) {
   stopifnot(is.numeric(nSample), length(nSample) == 1L, nSample > 0, nSample == as.integer(nSample))
   stopifnot(is.numeric(nMarker), length(nMarker) == 1L, nMarker > 0, nMarker == as.integer(nMarker))
@@ -17,6 +19,8 @@ validateExperimentInputs <- function(
   stopifnot(is.numeric(nCellByCondition) || is.integer(nCellByCondition))
   stopifnot(length(nCellByCondition) %in% c(1L, as.integer(nCondition)))
   stopifnot(all(nCellByCondition > 0))
+  stopifnot(is.numeric(stimMeanShift), length(stimMeanShift) == 1L, is.finite(stimMeanShift))
+  stopifnot(is.numeric(stimSdMultiplier), length(stimSdMultiplier) == 1L, is.finite(stimSdMultiplier), stimSdMultiplier > 0)
 }
 
 #' @title Validate inputs for simCytSample
@@ -35,7 +39,9 @@ validateSampleInputs <- function(
   meanExprMat,
   clusterLabelVec,
   covEvMin,
-  covEvMax
+  covEvMax,
+  stimMeanShift = 0,
+  stimSdMultiplier = 1
 ) {
   stopifnot(is.logical(probExact), length(probExact) == 1L)
   stopifnot(is.numeric(nCondition), length(nCondition) == 1L, nCondition > 1, nCondition == as.integer(nCondition))
@@ -70,6 +76,9 @@ validateSampleInputs <- function(
 
   stopifnot(is.numeric(covEvMin), length(covEvMin) == 1L, covEvMin > 0)
   stopifnot(is.numeric(covEvMax), length(covEvMax) == 1L, covEvMax >= covEvMin)
+
+  stopifnot(is.numeric(stimMeanShift), length(stimMeanShift) == 1L, is.finite(stimMeanShift))
+  stopifnot(is.numeric(stimSdMultiplier), length(stimSdMultiplier) == 1L, is.finite(stimSdMultiplier), stimSdMultiplier > 0)
 
   stopifnot(is.matrix(meanExprMat))
   stopifnot(nrow(meanExprMat) == as.integer(nCluster))

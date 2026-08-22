@@ -22,6 +22,8 @@ simCytExperiment(
   clusterPerturbationSd = 0,
   covEvMin = 1,
   covEvMax = 2,
+  stimMeanShift = 0,
+  stimSdMultiplier = 1,
   scenario = NULL
 )
 }
@@ -80,6 +82,14 @@ covariance matrices for cluster simulation. Default is 1.}
 \item{covEvMax}{Numeric. Maximum eigenvalue used when drawing positive-definite
 covariance matrices for cluster simulation. Default is 2.}
 
+\item{stimMeanShift}{Numeric scalar. Deterministic signed location shift
+added to all markers and components in stimulated conditions on the final
+transformed expression scale. Default is 0.}
+
+\item{stimSdMultiplier}{Numeric scalar. Multiplier applied to stimulated
+conditions post-transformation standard deviation around component means.
+Default is 1.}
+
 \item{scenario}{Optional scenario list created by a scenario builder such as
 \code{simCytScenarioBivariate()} or \code{simCytScenarioUnivariate()}. When supplied,
 any missing experiment values are filled from the scenario object while
@@ -117,7 +127,9 @@ sim_res <- simCytExperiment(
   nCellByCondition = c(100, 120),
   transformationFunc = simCytTransformIdentity(),
   mixtureType = "gaussianOnly",
-  probExact = FALSE
+  probExact = FALSE,
+  stimMeanShift = 0.5,
+  stimSdMultiplier = 1.2
 )
 
 names(sim_res$flowFrameList)

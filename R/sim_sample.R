@@ -28,6 +28,11 @@
 #' @param covEvMin Numeric. Minimum eigenvalue for cluster covariance matrices. Default is 1.
 #' @param covEvMax Numeric. Maximum eigenvalue for cluster covariance matrices. Default is 2.
 #' @param meanExprMatReference Numeric matrix. Reference cluster mean matrix.
+#' @param stimMeanShift Numeric scalar. Deterministic signed additive mean shift
+#'   applied to stimulated conditions post-transformation. Default is 0.
+#' @param stimSdMultiplier Numeric scalar. Multiplier applied to stimulated
+#'   conditions post-transformation standard deviation around component means.
+#'   Default is 1.
 #'
 #' @return A list with `flowFrameList` and `conditionLabelsList`.
 #'
@@ -48,7 +53,9 @@ simCytSample <- function(
   clusterPerturbationSd = 0,
   covEvMin = 1,
   covEvMax = 2,
-  meanExprMatReference = NULL
+  meanExprMatReference = NULL,
+  stimMeanShift = 0,
+  stimSdMultiplier = 1
 ) {
   # Validate inputs using helper
   validateSampleInputs(
@@ -65,7 +72,9 @@ simCytSample <- function(
     meanExprMat,
     clusterLabelVec,
     covEvMin,
-    covEvMax
+    covEvMax,
+    stimMeanShift,
+    stimSdMultiplier
   )
 
   # Begin Simulation Logic
@@ -108,6 +117,9 @@ simCytSample <- function(
         )
     }
 
+    currentStimMeanShift <- if (i == 1L) 0 else stimMeanShift
+    currentStimSdMultiplier <- if (i == 1L) 1 else stimSdMultiplier
+
     outListCondition <- simCytCondition(
       nMarker = nMarker,
       nCell = nCellByCondition[[i]],
@@ -120,7 +132,9 @@ simCytSample <- function(
       probExact = probExact,
       clusterPerturbationSd = clusterPerturbationSd,
       covEvMin = covEvMin,
-      covEvMax = covEvMax
+      covEvMax = covEvMax,
+      stimMeanShift = currentStimMeanShift,
+      stimSdMultiplier = currentStimSdMultiplier
     )
 
     # Create annotated data frame

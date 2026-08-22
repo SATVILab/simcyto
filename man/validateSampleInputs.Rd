@@ -18,7 +18,9 @@ validateSampleInputs(
   meanExprMat,
   clusterLabelVec,
   covEvMin,
-  covEvMax
+  covEvMax,
+  stimMeanShift = 0,
+  stimSdMultiplier = 1
 )
 }
 \description{

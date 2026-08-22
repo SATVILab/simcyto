@@ -46,6 +46,12 @@
 #'   covariance matrices for cluster simulation. Default is 1.
 #' @param covEvMax Numeric. Maximum eigenvalue used when drawing positive-definite
 #'   covariance matrices for cluster simulation. Default is 2.
+#' @param stimMeanShift Numeric scalar. Deterministic signed location shift
+#'   added to all markers and components in stimulated conditions on the final
+#'   transformed expression scale. Default is 0.
+#' @param stimSdMultiplier Numeric scalar. Multiplier applied to stimulated
+#'   conditions post-transformation standard deviation around component means.
+#'   Default is 1.
 #' @param scenario Optional scenario list created by a scenario builder such as
 #'   `simCytScenarioBivariate()` or `simCytScenarioUnivariate()`. When supplied,
 #'   any missing experiment values are filled from the scenario object while
@@ -71,7 +77,9 @@
 #'   nCellByCondition = c(100, 120),
 #'   transformationFunc = simCytTransformIdentity(),
 #'   mixtureType = "gaussianOnly",
-#'   probExact = FALSE
+#'   probExact = FALSE,
+#'   stimMeanShift = 0.5,
+#'   stimSdMultiplier = 1.2
 #' )
 #'
 #' names(sim_res$flowFrameList)
@@ -98,6 +106,8 @@ simCytExperiment <- function(
   clusterPerturbationSd = 0,
   covEvMin = 1,
   covEvMax = 2,
+  stimMeanShift = 0,
+  stimSdMultiplier = 1,
   scenario = NULL
 ) {
   if (!is.null(scenario)) {
@@ -160,7 +170,9 @@ simCytExperiment <- function(
     nCondition,
     nCluster,
     nCellByCondition,
-    transformationFunc
+    transformationFunc,
+    stimMeanShift,
+    stimSdMultiplier
   )
 
   meanExprMatReference <- meanExprMat
@@ -215,7 +227,9 @@ simCytExperiment <- function(
       conditionPerturbationSd = conditionPerturbationSd,
       clusterPerturbationSd = clusterPerturbationSd,
       covEvMin = covEvMin,
-      covEvMax = covEvMax
+      covEvMax = covEvMax,
+      stimMeanShift = stimMeanShift,
+      stimSdMultiplier = stimSdMultiplier
     )
 
     for (condInd in seq_len(nCondition)) {
