@@ -136,10 +136,14 @@ test_that("fixed-seed regression test guarantees exact cell allocation parity an
     probResponseVecByStimCondition = sc$probResponseVecByStimCondition
   )
 
-  expect_equal(flowCore::exprs(res1$flowFrameList[["sample001_unstim"]]),
-               flowCore::exprs(res2$flowFrameList[["sample001_unstim"]]))
-  expect_equal(res1$labelsList[["sample001_unstim"]],
-               res2$labelsList[["sample001_unstim"]])
+  expect_equal(
+    flowCore::exprs(res1$flowFrameList[["sample001_unstim"]]),
+    flowCore::exprs(res2$flowFrameList[["sample001_unstim"]])
+  )
+  expect_equal(
+    res1$labelsList[["sample001_unstim"]],
+    res2$labelsList[["sample001_unstim"]]
+  )
 })
 
 test_that("fixed-seed regression test validates mixture types and ratio corrections reproducibility", {
@@ -185,8 +189,10 @@ test_that("fixed-seed regression test validates mixture types and ratio correcti
     clusterPerturbationSd = 0.05
   )
 
-  expect_equal(flowCore::exprs(res_gamma1$flowFrameList[["sample001_stim1"]]),
-               flowCore::exprs(res_gamma2$flowFrameList[["sample001_stim1"]]))
+  expect_equal(
+    flowCore::exprs(res_gamma1$flowFrameList[["sample001_stim1"]]),
+    flowCore::exprs(res_gamma2$flowFrameList[["sample001_stim1"]])
+  )
 })
 
 test_that("probExact handles cases where rounded allocations exceed total cells without negative counts", {

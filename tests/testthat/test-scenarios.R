@@ -127,8 +127,10 @@ test_that("simCytExperiment accepts a scenario object as a direct contract", {
   expect_named(res, c("flowFrameList", "labelsList"))
   expect_length(res$flowFrameList, 2)
   expect_true(all(res$labelsList[["sample001_unstim"]] %in% sc$clusterLabelVec))
-  expect_equal(res$labelsList[["sample001_unstim"]],
-    expected$labelsList[["sample001_unstim"]])
+  expect_equal(
+    res$labelsList[["sample001_unstim"]],
+    expected$labelsList[["sample001_unstim"]]
+  )
 })
 
 test_that("fixed-seed regression test for scenario builders ensures deterministic outputs", {
@@ -206,4 +208,3 @@ test_that("simCytBuildProbVec and simCytBuildResponseVec integrate with simCytBu
   expect_true(all(stimProbs >= 0))
   expect_equal(sum(stimProbs), 1, tolerance = 1e-9)
 })
-

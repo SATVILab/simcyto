@@ -83,11 +83,11 @@ set.seed(2026)
 sim_res <- simCytExperiment(
   scenario = scenario,
   nSample = 2,
-  nCondition = 2,                  # unstim + stim1
-  nCellByCondition = c(250, 300),  # exact cells per condition
+  nCondition = 2, # unstim + stim1
+  nCellByCondition = c(250, 300), # exact cells per condition
   transformationFunc = identity_tf,
   mixtureType = "gaussianOnly",
-  probExact = FALSE,               # multinomial sampling
+  probExact = FALSE, # multinomial sampling
   samplePerturbationSd = 0.2,
   conditionPerturbationSd = 0.1,
   clusterPerturbationSd = 0.05,

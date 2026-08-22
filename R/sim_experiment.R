@@ -140,7 +140,7 @@ simCytExperiment <- function(
   }
 
   if (is.null(nSample) || is.null(nMarker) || is.null(nCondition) || is.null(nCluster) ||
-      is.null(nCellByCondition) || is.null(transformationFunc) || is.null(probVecUns)) {
+    is.null(nCellByCondition) || is.null(transformationFunc) || is.null(probVecUns)) {
     stop(
       "Missing required experiment inputs. Supply either explicit arguments or a valid `scenario` object."
     )

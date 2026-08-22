@@ -25,8 +25,7 @@
 #' @export
 simCytGetTransformation <- function(type = c("identity", "gaussian", "gamma", "gammaFixed", "skew"), ...) {
   type <- match.arg(type)
-  switch(
-    type,
+  switch(type,
     identity = simCytTransformIdentity(...),
     gaussian = simCytTransformGaussian(...),
     gamma = simCytTransformGamma(...),
