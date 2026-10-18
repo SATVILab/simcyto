@@ -18,8 +18,10 @@ simCytSample(
   probResponseVecByStimCondition = NULL,
   conditionPerturbationSd = 0,
   clusterPerturbationSd = 0,
+  meanShiftByCondition = NULL,
   covEvMin = 1,
   covEvMax = 2,
+  covMatByCondition = NULL,
   meanExprMatReference = NULL,
   stimMeanShift = 0,
   stimSdMultiplier = 1,
@@ -63,9 +65,18 @@ to cluster means.}
 \item{clusterPerturbationSd}{Numeric. Standard deviation of cluster-level perturbations
 within each condition.}
 
+\item{meanShiftByCondition}{Optional list of length \code{nCondition}; element \code{i}
+is an \verb{nCluster x nMarker} matrix added to the cluster means of condition
+\code{i}. Default is \code{NULL} (no shift).}
+
 \item{covEvMin}{Numeric. Minimum eigenvalue for cluster covariance matrices. Default is 1.}
 
 \item{covEvMax}{Numeric. Maximum eigenvalue for cluster covariance matrices. Default is 2.}
+
+\item{covMatByCondition}{Optional list of length \code{nCondition}; element \code{i} is
+a list of \code{nCluster} covariance matrices for condition \code{i}. When \code{NULL}
+(default), matrices are drawn per condition and cluster with \code{covEvMin} and
+\code{covEvMax}.}
 
 \item{meanExprMatReference}{Numeric matrix. Reference cluster mean matrix.}
 

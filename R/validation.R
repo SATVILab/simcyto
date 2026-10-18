@@ -150,3 +150,25 @@ validateSampleInputs <- function(
   stopifnot(is.character(clusterLabelVec))
   stopifnot(length(clusterLabelVec) == as.integer(nCluster))
 }
+
+#' Check a stimulated condition's cluster probabilities
+#'
+#' Errors unless the probabilities lie in `[0, 1]` and sum to 1 (up to
+#' `tol`); values within `tol` below 0 are set to 0.
+#'
+#' @keywords internal
+.simCytCheckStimProbVec <- function(probVec, stimInd, tol = 1e-6) {
+  isValid <- all(is.finite(probVec)) && all(probVec >= -tol) &&
+    all(probVec <= 1 + tol) && abs(sum(probVec) - 1) <= tol
+  if (!isValid) {
+    stop(
+      "Stimulated condition ", stimInd, " has cluster probabilities ",
+      "`probVecUns + probResponseVecByStimCondition[[", stimInd, "]]` = (",
+      paste(signif(probVec, 4), collapse = ", "),
+      "), which must lie between 0 and 1 and sum to 1. Each response vector ",
+      "must sum to zero and not push a probability below 0.",
+      call. = FALSE
+    )
+  }
+  pmax(probVec, 0)
+}

@@ -16,6 +16,7 @@ simCytCondition(
   clusterPerturbationSd = 0,
   covEvMin = 1,
   covEvMax = 2,
+  covMatList = NULL,
   meanExprMatReference = NULL,
   stimMeanShift = 0,
   stimSdMultiplier = 1,
@@ -47,6 +48,10 @@ Default is \code{FALSE}.}
 \item{covEvMin}{Numeric. Minimum eigenvalue for cluster covariance matrices. Default is 1.}
 
 \item{covEvMax}{Numeric. Maximum eigenvalue for cluster covariance matrices. Default is 2.}
+
+\item{covMatList}{Optional list of \code{nCluster} covariance matrices, one per
+cluster. When \code{NULL} (default), each cluster's matrix is drawn here with
+\code{covEvMin} and \code{covEvMax}.}
 
 \item{meanExprMatReference}{Numeric matrix. Reference cluster mean matrix.}
 

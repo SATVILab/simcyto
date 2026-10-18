@@ -129,7 +129,8 @@ table(sim_res$labelsList[["sample001_unstim"]])
 
 - sample/condition design (`nSample`, `nCondition`)
 - marker/population specification (`nMarker`, `nCluster = 2^nMarker`)
-- means (`meanExprMat`) and covariance behaviour (`covEvMin`, `covEvMax`)
+- means (`meanExprMat`) and covariance behaviour (`covEvMin`, `covEvMax`,
+  `covVaryBy`, `covMatList`, `covSd`, `covCor` and `simCytCovMat()`)
 - mixture distributions (`gaussianOnly`, `tOnly`, `tPlusGauss`)
 - baseline and response probabilities (`probVecUns`, response shifts)
 - perturbation layers (sample, condition, cluster)

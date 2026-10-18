@@ -6,14 +6,19 @@ simCytCluster <- function(
   mixtureType,
   clusterNumber,
   covEvMin = 1,
-  covEvMax = 2
+  covEvMax = 2,
+  sigmaMat = NULL
 ) {
   conditionPerturbationVec <- if (perturbationSd == 0L) {
     meanExprVec
   } else {
     meanExprVec + stats::rnorm(nMarker, mean = 0, sd = perturbationSd)
   }
-  currentSigma <- .posDef(nMarker, covEvMin, covEvMax)
+  currentSigma <- if (is.null(sigmaMat)) {
+    .posDef(nMarker, covEvMin, covEvMax)
+  } else {
+    sigmaMat
+  }
   simCytClusterData(
     mixtureType = mixtureType,
     clusterNumber = clusterNumber,
