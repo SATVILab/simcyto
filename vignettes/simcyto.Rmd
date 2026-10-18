@@ -223,7 +223,11 @@ names(res_full$flowFrameList)
 | `samplePerturbationSd`       | SD of per-sample additive mean perturbation                             |
 | `conditionPerturbationSd`    | SD of per-condition additive mean perturbation                          |
 | `clusterPerturbationSd`      | SD of per-cluster (cell-level) mean perturbation                        |
+| `meanPerturbation`           | Mean-perturbation layers, each with an SD and the strata it varies by   |
 | `covEvMin` / `covEvMax`      | Eigenvalue range for random positive-definite covariance matrices       |
+| `covVaryBy`                  | Strata (sample, condition, cluster) a random covariance matrix varies by |
+| `covMatList`                 | Fixed per-cluster covariance matrices (see `simCytCovMat()`)            |
+| `covSd` / `covCor`           | Marker SDs and correlations, fixed or drawn from ranges                 |
 | `stimMeanShift`              | Additive location shift applied to stimulated conditions                |
 | `stimMeanShiftClusters`      | Restrict `stimMeanShift` to specific clusters (default: all)            |
 | `stimSdMultiplier`           | SD multiplier for stimulated conditions                                 |
@@ -439,8 +443,9 @@ realism:
   sample, drawn once per sample per marker. Models inter-individual variation.
 - **`conditionPerturbationSd`**: Shift applied within each condition of a
   sample. Models within-individual stimulation batch variation.
-- **`clusterPerturbationSd`**: Per-cluster shift during cell-level simulation.
-  Models intra-population heterogeneity.
+- **`clusterPerturbationSd`**: Per-cluster shift during cell-level simulation,
+  drawn afresh in every condition of every sample, so it also makes a sample's
+  conditions differ.
 
 ```{r}
 set.seed(2026)
@@ -462,6 +467,116 @@ sapply(
   function(nm) colMeans(flowCore::exprs(res_perturbed$flowFrameList[[nm]]))
 )
 ```
+
+`meanPerturbation` generalises these layers. Each layer `list(sd = , varyBy = )`
+adds a normal shift per marker, drawn once for each combination of its `varyBy`
+factors (`"sample"`, `"condition"`, `"cluster"`) and shared by everything else.
+For example, cluster positions that vary between samples but not between a
+sample's conditions:
+
+```{r}
+set.seed(2026)
+res_mean_layers <- simCytExperiment(
+  scenario = sc_biv,
+  nSample = 3,
+  nCondition = 2,
+  nCellByCondition = 200,
+  transformationFunc = simCytTransformIdentity(),
+  probExact = TRUE,
+  meanPerturbation = list(
+    list(sd = 0.5, varyBy = "sample"),
+    list(sd = 0.2, varyBy = c("sample", "cluster"))
+  )
+)
+```
+
+Layers add to each other and to the `*PerturbationSd` arguments.
+
+## 8. Within-cluster covariance
+
+Each cluster is drawn from a multivariate distribution whose covariance matrix
+(on the raw scale, before `transformationFunc`) is either drawn at random or
+fixed.
+
+**Random matrices.** `covEvMin` and `covEvMax` bound the eigenvalues of a
+randomly rotated matrix, so markers within a cluster have random spreads and
+correlations. `covVaryBy` chooses which strata get their own matrix: one is
+drawn for each combination of the listed factors (`"sample"`, `"condition"`,
+`"cluster"`) and shared by everything else. The default lists all three, so
+the unstimulated and stimulated tubes of a sample differ in covariance; use
+`"cluster"` (or `c("sample", "cluster")` for differences between samples only)
+to avoid that. Setting `covEvMin == covEvMax` gives the spherical matrix
+`covEvMin * I` whatever `covVaryBy` is.
+
+```{r}
+set.seed(2026)
+res_cov_random <- simCytExperiment(
+  scenario = sc_biv,
+  nSample = 2,
+  nCondition = 2,
+  nCellByCondition = 2000,
+  transformationFunc = simCytTransformIdentity(),
+  probExact = TRUE,
+  covEvMin = 0.5,
+  covEvMax = 3,
+  covVaryBy = c("sample", "cluster")
+)
+```
+
+**Chosen SDs and correlations.** `covSd` and `covCor` build each matrix from
+marker standard deviations and pairwise correlations. A single value fixes
+them; a range `c(lo, hi)` draws each marker's SD and each pair's correlation
+uniformly from it. A list with one entry per cluster sets clusters separately.
+Unless `covCor` is 0 (the default), the markers are correlated. Draws follow
+`covVaryBy`, which here defaults to one matrix shared by every cluster, sample
+and condition (or one per cluster when settings differ by cluster); use
+`covVaryBy = "cluster"` to draw each cluster's correlations separately.
+
+```{r}
+set.seed(2026)
+res_cov_range <- simCytExperiment(
+  scenario = sc_biv,
+  nSample = 2,
+  nCondition = 2,
+  nCellByCondition = 2000,
+  transformationFunc = simCytTransformIdentity(),
+  probExact = TRUE,
+  covSd = sqrt(1.5),
+  covCor = c(0, 0.5)
+)
+```
+
+**Fixed matrices.** `covMatList` takes one matrix per cluster (or one matrix
+for all clusters), used unchanged in every sample and condition.
+`simCytCovMat()` builds a matrix from marker SDs and correlations. Keeping the
+SDs fixed while changing the correlation leaves each marker's separation
+unchanged.
+
+```{r}
+cov_neg <- simCytCovMat(sd = sqrt(1.5), rho = 0.5, nMarker = 2)
+cov_pos <- simCytCovMat(sd = sqrt(1.5), rho = 0, nMarker = 2)
+set.seed(2026)
+res_cov_fixed <- simCytExperiment(
+  scenario = sc_biv,
+  nSample = 2,
+  nCondition = 2,
+  nCellByCondition = 2000,
+  transformationFunc = simCytTransformIdentity(),
+  probExact = TRUE,
+  covMatList = list(cov_neg, cov_pos, cov_pos, cov_pos)
+)
+
+expr <- flowCore::exprs(res_cov_fixed$flowFrameList[["sample001_unstim"]])
+lab <- res_cov_fixed$labelsList[["sample001_unstim"]]
+cor(expr[lab == sc_biv$clusterLabelVec[[1]], ])
+```
+
+Non-linear transformations reshape these matrices. The gamma transformations
+fold values around zero, which weakens and removes the sign of correlations
+within low-mean clusters, and `simCytTransformGamma()` and
+`simCytTransformSkew()` rescale the upper components to preserve the raw-scale
+separation rather than each component's spread. `simCytTransformGammaFixed()`
+keeps each cluster's raw mean and SD.
 
 ## Session info
 

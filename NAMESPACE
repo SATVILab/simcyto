@@ -3,6 +3,7 @@
 export(simCytBuildProbVec)
 export(simCytBuildResponseVec)
 export(simCytBuildScenario)
+export(simCytCovMat)
 export(simCytExperiment)
 export(simCytGetTransformation)
 export(simCytScenarioBivariate)

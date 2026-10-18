@@ -20,8 +20,13 @@ simCytExperiment(
   samplePerturbationSd = 0,
   conditionPerturbationSd = 0,
   clusterPerturbationSd = 0,
+  meanPerturbation = NULL,
   covEvMin = 1,
   covEvMax = 2,
+  covMatList = NULL,
+  covVaryBy = c("sample", "condition", "cluster"),
+  covSd = NULL,
+  covCor = NULL,
   stimMeanShift = 0,
   stimSdMultiplier = 1,
   stimMeanShiftClusters = NULL,
@@ -67,7 +72,10 @@ unstimulated condition. Must have length \code{nCluster} and sum to 1.}
 \item{probResponseVecByStimCondition}{NULL or list. If provided, must be a list
 of length \code{nCondition - 1}, where each element is a numeric vector of
 length \code{nCluster}. Each vector is added to \code{probVecUns} to construct the
-stimulated-condition cluster probabilities (response shifts).}
+stimulated-condition cluster probabilities (response shifts), so each
+vector must sum to zero and keep every probability between 0 and 1; an
+error is raised otherwise. See Details for how background and response
+combine.}
 
 \item{samplePerturbationSd}{Numeric. Standard deviation of sample-level
 perturbations added to cluster means. Default is 0.}
@@ -76,13 +84,73 @@ perturbations added to cluster means. Default is 0.}
 perturbations added to cluster means within each sample. Default is 0.}
 
 \item{clusterPerturbationSd}{Numeric. Standard deviation of cluster-level
-perturbations applied during cell-level simulation. Default is 0.}
+perturbations applied during cell-level simulation. Default is 0. It is
+drawn afresh for every cluster of every condition of every sample, so the
+conditions of a sample differ in their cluster means; use
+\code{meanPerturbation} with \code{varyBy = c("sample", "cluster")} for
+cluster-level variation between samples only.}
+
+\item{meanPerturbation}{Optional general mean perturbations (raw scale): a
+layer \code{list(sd = , varyBy = )} or a list of layers. Each layer adds a shift
+drawn from \code{N(0, sd^2)}, independently for each marker, once for each
+combination of its \code{varyBy} factors (any subset of \code{"sample"},
+\code{"condition"} and \code{"cluster"}) and shared by every stratum that agrees on
+them. For example, \code{varyBy = "sample"} matches \code{samplePerturbationSd},
+\code{c("sample", "condition")} matches \code{conditionPerturbationSd},
+\code{c("sample", "condition", "cluster")} matches \code{clusterPerturbationSd},
+\code{c("sample", "cluster")} moves clusters between samples without differences
+between a sample's conditions, and \code{c("condition", "cluster")} gives a fixed
+cluster-specific condition effect shared by every sample. Layers add to
+each other and to the \verb{*PerturbationSd} arguments. Default is \code{NULL}.}
 
 \item{covEvMin}{Numeric. Minimum eigenvalue used when drawing positive-definite
-covariance matrices for cluster simulation. Default is 1.}
+covariance matrices for cluster simulation. Default is 1. Ignored when
+\code{covMatList} or \code{covSd} is supplied.}
 
 \item{covEvMax}{Numeric. Maximum eigenvalue used when drawing positive-definite
-covariance matrices for cluster simulation. Default is 2.}
+covariance matrices for cluster simulation. Default is 2. Ignored when
+\code{covMatList} or \code{covSd} is supplied. Setting \code{covEvMin == covEvMax} gives the
+spherical matrix \code{covEvMin * I}, whatever \code{covVaryBy} is.}
+
+\item{covMatList}{Optional fixed covariance matrices (on the raw,
+pre-transformation scale) instead of random draws: a single
+\verb{nMarker x nMarker} matrix used for every cluster, or a list of \code{nCluster}
+matrices in the order of \code{clusterLabelVec}. Each cluster then has the same
+matrix in every sample and condition. Build matrices from marker SDs and
+correlations with \code{\link[=simCytCovMat]{simCytCovMat()}}. For \code{"tOnly"} and \code{"tPlusGauss"}
+mixtures this is the scale matrix of the t distribution. Default is \code{NULL}.}
+
+\item{covVaryBy}{Character vector. For randomly drawn covariance matrices,
+the strata the matrix varies by: any subset of \code{"sample"}, \code{"condition"}
+and \code{"cluster"}. One matrix is drawn for each combination of the listed
+factors and shared by every stratum that agrees on them. For example,
+\code{"cluster"} gives each cluster its own matrix, fixed across samples and
+conditions; \code{c("sample", "cluster")} redraws per sample but keeps a
+sample's conditions identical; \code{"condition"} gives each condition its own
+matrix, the same in every sample and cluster; \code{character(0)} uses one
+matrix throughout. The default, all three factors, draws a new matrix for
+every cluster of every condition of every sample, which makes the
+conditions of a sample differ in covariance unless
+\code{covEvMin == covEvMax}. When \code{covSd} is supplied the default is instead
+\code{character(0)}, one matrix shared by every cluster, sample and condition,
+or \code{"cluster"} when \code{covSd} or \code{covCor} differ by cluster. Cannot be
+combined with \code{covMatList}.}
+
+\item{covSd}{Optional marker standard deviations (raw scale) for covariance
+matrices built from SDs and correlations instead of eigenvalues: a single
+value used for every marker, or a range \code{c(lo, hi)} from which each
+marker's SD is drawn uniformly. A list of \code{nCluster} such entries sets each
+cluster separately. Default is \code{NULL} (eigenvalue draws).}
+
+\item{covCor}{Inter-marker correlations used with \code{covSd}: a single value for
+every pair of markers, or a range \code{c(lo, hi)} from which each pair's
+correlation is drawn uniformly (redrawn until the correlation matrix is
+positive definite). A list of \code{nCluster} entries sets each cluster
+separately. Default is \code{NULL}, meaning 0 (uncorrelated markers). Requires
+\code{covSd}. Draws are made per \code{covVaryBy} stratum: by default
+\code{covCor = c(0, 0.5)} draws one correlation structure shared by every
+cluster, sample and condition, while \code{covVaryBy = "cluster"} draws one per
+cluster. Per-cluster lists require \code{"cluster"} in \code{covVaryBy}.}
 
 \item{stimMeanShift}{Numeric scalar. Deterministic signed location shift
 added to all markers and components in stimulated conditions on the final
@@ -128,6 +196,17 @@ samples. The simulator follows the hierarchy
 
 The current phenotype contract is explicit: populations are all binary marker
 combinations, so \code{nCluster} must equal \code{2^nMarker}.
+}
+\details{
+\strong{Background and response.} Each sample has one unstimulated condition,
+with cluster probabilities \code{probVecUns}. Every stimulated condition \code{k} has
+probabilities \code{probVecUns + probResponseVecByStimCondition[[k]]}. All
+stimulated conditions of a sample therefore share the unstimulated
+background, with their own response added on top: the net (stimulated minus
+unstimulated) frequency of a cluster is exactly its response entry. Cell
+labels name the cluster only, so background and responding cells in a
+stimulated condition cannot be told apart. Each condition's cluster counts
+are drawn independently (or rounded when \code{probExact = TRUE}).
 }
 \examples{
 scenario <- simCytScenarioBivariate()

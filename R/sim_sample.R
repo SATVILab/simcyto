@@ -27,6 +27,13 @@
 #'   within each condition.
 #' @param covEvMin Numeric. Minimum eigenvalue for cluster covariance matrices. Default is 1.
 #' @param covEvMax Numeric. Maximum eigenvalue for cluster covariance matrices. Default is 2.
+#' @param meanShiftByCondition Optional list of length `nCondition`; element `i`
+#'   is an `nCluster x nMarker` matrix added to the cluster means of condition
+#'   `i`. Default is `NULL` (no shift).
+#' @param covMatByCondition Optional list of length `nCondition`; element `i` is
+#'   a list of `nCluster` covariance matrices for condition `i`. When `NULL`
+#'   (default), matrices are drawn per condition and cluster with `covEvMin` and
+#'   `covEvMax`.
 #' @param meanExprMatReference Numeric matrix. Reference cluster mean matrix.
 #' @param stimMeanShift Numeric scalar. Deterministic signed additive mean shift
 #'   applied to stimulated conditions post-transformation. Default is 0.
@@ -57,8 +64,10 @@ simCytSample <- function(
   probResponseVecByStimCondition = NULL,
   conditionPerturbationSd = 0,
   clusterPerturbationSd = 0,
+  meanShiftByCondition = NULL,
   covEvMin = 1,
   covEvMax = 2,
+  covMatByCondition = NULL,
   meanExprMatReference = NULL,
   stimMeanShift = 0,
   stimSdMultiplier = 1,
@@ -107,6 +116,12 @@ simCytSample <- function(
     }
   }
 
+  for (stimInd in seq_len(nCondition - 1L)) {
+    probVecByCondition[[stimInd + 1L]] <- .simCytCheckStimProbVec(
+      probVecByCondition[[stimInd + 1L]], stimInd
+    )
+  }
+
   conditionLabelVec <- c("unstim", paste0("stim", seq_len(nCondition - 1L)))
   flowList <- stats::setNames(lapply(seq_len(nCondition), function(i) NULL), conditionLabelVec)
   labelsList <- stats::setNames(lapply(seq_len(nCondition), function(i) NULL), conditionLabelVec)
@@ -127,6 +142,10 @@ simCytSample <- function(
         )
     }
 
+    if (!is.null(meanShiftByCondition)) {
+      meanExprMat <- meanExprMat + meanShiftByCondition[[i]]
+    }
+
     currentStimMeanShift <- if (i == 1L) 0 else stimMeanShift
     currentStimSdMultiplier <- if (i == 1L) 1 else stimSdMultiplier
 
@@ -143,6 +162,7 @@ simCytSample <- function(
       clusterPerturbationSd = clusterPerturbationSd,
       covEvMin = covEvMin,
       covEvMax = covEvMax,
+      covMatList = covMatByCondition[[i]],
       stimMeanShift = currentStimMeanShift,
       stimSdMultiplier = currentStimSdMultiplier,
       stimMeanShiftClusters = stimMeanShiftClusters,
